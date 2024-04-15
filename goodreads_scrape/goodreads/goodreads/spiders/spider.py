@@ -34,8 +34,14 @@ class GoodreadsSpider(scrapy.Spider):
 
     def parse_book(self, response):
         item = GoodreadsItem()
+        
+        book_name = response.css("h1.Text::text").get()
+        if not book_name:
+            # If the book url is faulty, we can't extract anything
+            return
+        
         # Static content, we can extract directly using CSS or XPath selectors
-        item["name"] = response.css("h1.Text::text").get()
+        item["name"] = book_name
         description_text = response.xpath(
             '//div[contains(@class, "BookPageMetadataSection__description")]//span[@class="Formatted"]/text()'
         ).getall()
@@ -52,9 +58,9 @@ class GoodreadsSpider(scrapy.Spider):
         item["num_reviews"] = int(
             statistics_spans[1].xpath(".//text()").get().replace(",", "")
         )
-        item["pages"] = int(
-            response.css("div.FeaturedDetails p::text").get().split()[0]
-        )
+        # item["pages"] = int(
+        #     response.css("div.FeaturedDetails p[data-testid='pagesFormat']::text").get().split()[0]
+        # )
 
         genres = []
         # Goodreads item pages have a huge script with all the relevant data
