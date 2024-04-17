@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Books</title>
+    <link rel="stylesheet" href="/static/css/style.css"> <!-- Optional CSS link -->
+    <style>
+        /* CSS to center align the content */
+        body, html {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f0f0f0; /* Example background color */
+        }
+
+        .container {
+            text-align: center;
+        }
+    </style>
+    <script src="/static/js/app.js"></script> <!-- Link to your JS file -->
+</head>
+<body>
+    <div class="container">
+        <img src="/static/images/logo_resized.png" alt="Registration Logo" class="logo">
+        <h1>Book Search</h1>
+        <form id="searchForm">
+            <input type="text" id="searchQuery" placeholder="Search for books..." required>
+            <button type="submit">Search</button>
+        </form>
+        <div id="searchResults"></div>
+    </div>
+
+    <script>
+        document.getElementById('searchForm').onsubmit = function(event) {
+            event.preventDefault();
+            var query = document.getElementById('searchQuery').value;
+            fetch('/search?query=' + encodeURIComponent(query))
+                .then(response => response.json())
+                .then(data => {
+                    var resultsContainer = document.getElementById('searchResults');
+                    resultsContainer.innerHTML = ''; // Clear previous results
+                    data.forEach(book => {
+                        var div = document.createElement('div');
+                        div.textContent = book['_source']["title"] + " - " + book['_source']['description']; // Adjust according to your book data structure
+                        resultsContainer.appendChild(div);
+                    });
+                })
+                .catch(error => console.error('Error fetching data: ', error));
+        };
+    </script>
+</body>
+</html>

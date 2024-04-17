@@ -1,0 +1,55 @@
+body, html {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f0f0f0; /* Example background color */
+}
+
+.login-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    max-width: 340px;
+    padding: 20px;
+    background-color: white; /* Set a background color for the login area */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Optional: adds shadow for better visibility */
+}
+
+.register-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    background-color: white;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border-radius: 8px;
+}
+
+.logo {
+    width: 80%; /* Adjust the width as needed */
+    margin-bottom: 20px;
+}
+
+input[type="text"], input[type="password"] {
+    padding: 8px;
+    margin-bottom: 10px; /* Adds space between the inputs */
+    width: 300px; /* Make sure this fits well with the max-width of .login-container */
+    border: 1px solid #ccc; /* Optional: adds border to inputs */
+    border-radius: 4px; /* Optional: rounds the corners of the input fields */
+}
+
+button {
+    padding: 10px 20px;
+    width: 100%; /* Makes the button as wide as the inputs */
+    background-color: #007BFF; /* Example button color */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px; /* Space between the password input and the button */
+}
