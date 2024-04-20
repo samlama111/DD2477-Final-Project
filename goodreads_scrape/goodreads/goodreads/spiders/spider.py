@@ -25,21 +25,23 @@ class GoodreadsSpider(scrapy.Spider):
         tr_elements = response.xpath("//tr")
         for tr in tr_elements:
             url = tr.xpath(".//a/@href").get()
-            # TODO: Investigate error with wrong ID in
-            # https://www.goodreads.com/book/show/19351490-grimm-s-fairy-tales
+            full_url = f"https://www.goodreads.com{url}"
             yield scrapy.Request(
-                url=f"https://www.goodreads.com{url}",
+                url=full_url,
                 callback=self.parse_book,
+                # Pass the URL as a meta parameter to be able to use it in the parse_book method
+                meta={"url": full_url},
             )
 
     def parse_book(self, response):
+        url = response.meta["url"]
         item = GoodreadsItem()
-        
+
         book_name = response.css("h1.Text::text").get()
         if not book_name:
             # If the book url is faulty, we can't extract anything
             return
-        
+
         # Static content, we can extract directly using CSS or XPath selectors
         item["name"] = book_name
         description_text = response.xpath(
@@ -58,6 +60,8 @@ class GoodreadsSpider(scrapy.Spider):
         item["num_reviews"] = int(
             statistics_spans[1].xpath(".//text()").get().replace(",", "")
         )
+        item["url"] = url
+        # Currently commented out as it can error. To be uncommented and fixed if found relevant.
         # item["pages"] = int(
         #     response.css("div.FeaturedDetails p[data-testid='pagesFormat']::text").get().split()[0]
         # )
@@ -83,16 +87,17 @@ class GoodreadsSpider(scrapy.Spider):
             ]
             # Get only name key from raw_generes
             genres = [raw_genre["genre"]["name"] for raw_genre in raw_genres]
+            # Set the item ID
+            item["id"] = amazon_book_id
         # Fallback to parsing genres from the static content
         else:
             genre_spans = response.css("span.BookPageMetadataSection__genreButton")
             for genre_span in genre_spans:
                 genres.append(genre_span.css("a span::text").get())
+            # Fallback item ID
+            # item["id"] = url
 
         item["genres"] = genres
-
-        # TODO: Get the ISBN from the script at the bottom of the page
-        # Not every book has an ISBN, so we can't guarantee it as an ID
 
         yield item
 

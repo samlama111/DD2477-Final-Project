@@ -15,4 +15,5 @@ class GoodreadsItem(scrapy.Item):
     num_ratings = scrapy.Field()
     genres = scrapy.Field()
     pages = scrapy.Field()
-    isbn = scrapy.Field()
+    id = scrapy.Field()
+    url = scrapy.Field()
