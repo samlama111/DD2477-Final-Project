@@ -12,6 +12,7 @@ def set_up_experiment_index(es_client: Elasticsearch):
         'title': 'Space dragons I: The dragoning',
         'author': 'I. Ron Butterfly',
         'description': 'Eric was in space prison before he was rescued by the dragon Terra-axis, who was actually a CyDragon but we do not have time to get into it. Adventure awaits.',
+        'genres': 'sci-fi, fantasy, dragons, dystopia',
         'rating': 0.2,
         'reviews': 20,
         'id': '1'
@@ -20,6 +21,7 @@ def set_up_experiment_index(es_client: Elasticsearch):
         'title': 'Space dragons II: Even spacier',
         'author': 'I. Ron Butterfly',
         'description': 'It had been five years since Eric was rescued from space prison, but now he and his dragon are out for revenge.',
+        'genres': 'sci-fi, fantasy, dragons, dystopia',
         'rating': 0.1,
         'reviews': 100,
         'id': '2'
@@ -28,6 +30,7 @@ def set_up_experiment_index(es_client: Elasticsearch):
         'title': 'Tales of Duskendale',
         'author': 'Elias Fakinami',
         'description': 'The dragons have been gone for as long as anyone can remember, but just yesterday Delilah the dragon tamer claims she saw a dragon close to the dragon roost cavern. Gosh darn she likes dragons.',
+        'genres': 'fantasy, romance',
         'rating': 4.0,
         'reviews': 20000,
         'id': '3'
@@ -36,6 +39,7 @@ def set_up_experiment_index(es_client: Elasticsearch):
         'title': 'Romance Academy 7',
         'author': 'Soos',
         'description': 'When the cherry blossoms of magic romance academy are in bloom... anything can happen. So true.',
+        'genres': 'fantasy, romance, teen',
         'rating': 2.0,
         'reviews': 238,
         'id': '4'
@@ -67,6 +71,9 @@ def rated_search(es_client: Elasticsearch, query: str):
     resp = es_client.search(index=INDEX, body=query_body)
     return [result for result in resp['hits']['hits']]
 
+def _build_query(query_list, field, queries, boost):
+    pass
+
 def rated_and_weighted_search(es_client: Elasticsearch, weighted_queries: dict[str, float]):
     boolean_queries = []
     for q, w in weighted_queries.items():
@@ -74,7 +81,6 @@ def rated_and_weighted_search(es_client: Elasticsearch, weighted_queries: dict[s
             "match": {"description": {"query": q, "boost": w}}
         }
         boolean_queries.append(next)
-    print(boolean_queries)
     
     query_body = {
         "query" : {
@@ -84,7 +90,7 @@ def rated_and_weighted_search(es_client: Elasticsearch, weighted_queries: dict[s
                 },
                 "script_score": {
                     "script": {
-                        "source": "doc['rating'].value" # Math.log(doc['reviews'].value) * 
+                        "source": "Math.log(doc['reviews'].value) * doc['rating'].value" # Math.log(doc['reviews'].value) * 
                     }
                 }
             }

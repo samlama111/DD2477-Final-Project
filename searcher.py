@@ -1,5 +1,23 @@
 from elasticsearch import Elasticsearch
 
+"""
+Format of book documents in ES:
+{
+	"title": str,
+	"author": str,
+	"abstract": str,
+	"genres": [str],
+	"rating": float,
+	"n_ratings": int,
+	"n_reviews": int,
+	"book_id": str,
+	"url": str,
+	"img_url": str,
+}
+
+
+"""
+
 class Searcher:
 	"""
 	Main class for handling recommendation queries for new books.
@@ -8,27 +26,6 @@ class Searcher:
 	USER_INDEX_NAME = "users" # The name of the ES index where user data is stored
 	def __init__(self, client: Elasticsearch) -> None:
 		self.client = client
-	
-	def query_category(self, query_terms: dict[str, float], category: str) -> list[dict]:
-		"""
-		Constructs and runs a query with the given weighted terms for the given category
-
-		:param query_terms: Dictionary with keys being the query terms and values being the weight attributed to them
-		:param category: Category which the query should match
-
-		:return: Ranked results in a list
-		"""
-		pass
-
-	def query_full(self, query_terms: dict[str, float]) -> list[dict]:
-		"""
-		Constructs and runs a query with the given weighted terms over all categories
-
-		:param query_terms: Dictionary with keys being the query terms and values being the weight attributed to them
-
-		:return: Ranked results in a list
-		"""
-		pass
 
 	def query(self, query: str, user_id: str) -> list[dict]:
 		"""
@@ -37,14 +34,20 @@ class Searcher:
 		:param query: Query in string form from user
 		:param user_id: Unique user ID used as id for 'user' index in ES database
 
-		:return: Ranked results in a list
+		:return: Results in an ordered list
 		"""
 		pass
 
 	def get_user(user_id: str) -> dict:
 		"""
 		Retrieves user data from ES. 
-		TODO: Unsure if output will be a list of book_ids or a dict/class containing more relevant user data
+		Expected format of user data:
+		{
+			"name": str
+			"books": [str]
+			"gen_weight": dict(str, float)
+			"abs_weight": dict(str, float)
+		}
 
 		:param user_id: Unique user ID used as id for 'user' index in ES database
 
