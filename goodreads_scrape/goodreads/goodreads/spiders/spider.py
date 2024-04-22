@@ -61,6 +61,9 @@ class GoodreadsSpider(scrapy.Spider):
             statistics_spans[1].xpath(".//text()").get().replace(",", "")
         )
         item["url"] = url
+        item["image_url"] = response.css(
+            "div.BookPage__leftColumn div.BookCover__image div img::attr(src)"
+        ).get()
         # Currently commented out as it can error. To be uncommented and fixed if found relevant.
         # item["pages"] = int(
         #     response.css("div.FeaturedDetails p[data-testid='pagesFormat']::text").get().split()[0]

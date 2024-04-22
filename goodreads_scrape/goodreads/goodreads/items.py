@@ -17,3 +17,4 @@ class GoodreadsItem(scrapy.Item):
     pages = scrapy.Field()
     id = scrapy.Field()
     url = scrapy.Field()
+    image_url = scrapy.Field()
