@@ -1,0 +1,104 @@
+body, html {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f0f0f0; /* Example background color */
+}
+
+.login-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    max-width: 340px;
+    padding: 20px;
+    background-color: white; /* Set a background color for the login area */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Optional: adds shadow for better visibility */
+}
+
+.register-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    background-color: white;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border-radius: 8px;
+}
+
+.logo {
+    width: 80%; /* Adjust the width as needed */
+    margin-bottom: 20px;
+}
+
+input[type="text"], input[type="password"] {
+    padding: 8px;
+    margin-bottom: 10px; /* Adds space between the inputs */
+    width: 300px; /* Make sure this fits well with the max-width of .login-container */
+    border: 1px solid #ccc; /* Optional: adds border to inputs */
+    border-radius: 4px; /* Optional: rounds the corners of the input fields */
+}
+
+button {
+    padding: 10px 20px;
+    width: 100%; /* Makes the button as wide as the inputs */
+    background-color: #007BFF; /* Example button color */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px; /* Space between the password input and the button */
+}
+
+/* Additional styles for search result items */
+
+.add-book-button {
+    padding: 10px 15px; /* Standard padding */
+    font-size: 0.8em; /* Consistent font size */
+    margin-left: 10px; /* Space between the book name and the button */
+    width: auto; /* Adjusts to content size */
+    min-width: 100px; /* Minimum width to handle shorter titles */
+    white-space: nowrap; /* Prevents text from wrapping */
+    overflow: hidden; /* Keeps the text inside the button area */
+    text-overflow: ellipsis; /* Adds ellipsis if the text is too long */
+}
+
+
+.search-result-item {
+    display: flex;
+    align-items: center; /* Ensures vertical alignment is centered */
+    justify-content: space-between; /* Spaces out content between left and right sides */
+    margin-bottom: 5px; /* Space between each search result item */
+    margin-top: 5px;
+    padding: 5px;
+    background-color: #fff; /* White background for readability */
+    border: 1px solid #ddd; /* A light border */
+}
+
+.book-image {
+    width: 50px; /* Set a fixed width for the images */
+    height: auto; /* Maintain aspect ratio */
+    margin-right: 10px; /* Space between the image and the book title */
+    vertical-align: middle; /* Aligns the image with the text vertically */
+}
+
+.book-info {
+    flex-grow: 1; /* Allows the text content to take up the remaining space */
+    margin-right: 10px; /* Ensures some space before the button */
+    text-align: left;
+}
+
+#searchResults {
+    max-height: 500px; /* Adjust the height based on your UI design */
+    overflow-y: auto; /* Enables vertical scrolling */
+    width: 100%; /* Ensures the container fits the width of its parent */
+    border: 1px solid #ccc; /* Adds a light border for better visibility */
+    margin-top: 20px; /* Space above the results container */
+    padding: 5px; /* Padding inside the results container */
+    background-color: #fff; /* Sets background color to white for readability */
+}
+
