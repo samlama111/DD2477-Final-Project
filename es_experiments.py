@@ -36,7 +36,7 @@ def set_up_experiment_index(es_client: Elasticsearch):
 		'id': '3'
 	}
 	data4 = {
-		'title': 'Romance Academy 7',
+		'title': 'Romance Academy 7: The Romancing',
 		'author': 'Soos',
 		'description': 'When the cherry blossoms of magic romance academy are in bloom... anything can happen. So true.',
 		'genres': 'fantasy, romance, teen',
@@ -125,6 +125,43 @@ def rated_and_weighted_search_new(es_client: Elasticsearch, weighted_queries: di
 	resp = es_client.search(index=INDEX, body=query_body)
 	return [result for result in resp['hits']['hits']]
 
+def rated_final(es_client: Elasticsearch, weighted_queries: dict[str, float], description_boost = 1, title_boost = 5):
+
+	query_terms = [f'{q}^{w}' for q, w in weighted_queries.items()]
+	joint_query = " ".join(query_terms)
+
+	query_body = {
+		"query" : {
+			"function_score" : {
+				"query": {
+					"bool" : {"should" : [
+							{"query_string": {
+								"query": joint_query,
+								"default_field": "description",
+								"boost": description_boost
+								}
+							},
+							{"query_string": {
+								"query": joint_query,
+								"default_field": "title",
+								"boost": title_boost
+								}
+							},
+						]
+					},
+				},
+				"script_score": {
+					"script": {
+						"source": "sigmoid(doc['reviews'].value, 2, 1) * doc['rating'].value" # Math.log(doc['reviews'].value) * 
+					}
+				}
+			}
+		}
+	}
+		
+	resp = es_client.search(index=INDEX, body=query_body)
+	return [result for result in resp['hits']['hits']]
+
 def show_results(results):
 	for res in results:
 		print(f'Title: {res["_source"]["title"]}')
@@ -134,28 +171,7 @@ def show_results(results):
 		print(f'Score: {res["_score"]}')
 		print()
 
-INDEX = 'experiment_index'
-FIRST_TIME = False
-def main():
-	es_client = get_client()
-	if FIRST_TIME:
-		set_up_experiment_index(es_client)
-	results = standard_search(es_client, 'dragon')
-
-	results = rated_search(es_client, 'dragon')
-
-	weighted_queries = {
-		'dragon': 0.1,
-		'space': 1.5,
-		'petrichor': 5.3
-	}
-	results = rated_and_weighted_search(es_client, weighted_queries)
-	show_results(results)
-	print("\n---------------------------\n")
-	results = rated_and_weighted_search_new(es_client, weighted_queries)
-	show_results(results)
-
-	# speed test
+def speed_test():
 	from timeit import timeit
 	import random as rn
 	import matplotlib.pyplot as plt
@@ -174,6 +190,34 @@ def main():
 	plt.ylabel('Execution time [ms]')
 	plt.legend()
 	plt.show()
+
+INDEX = 'experiment_index'
+FIRST_TIME = False
+def main():
+	es_client = get_client()
+	if FIRST_TIME:
+		set_up_experiment_index(es_client)
+	results = standard_search(es_client, 'dragon')
+
+	results = rated_search(es_client, 'dragon')
+
+	weighted_queries = {
+		'dragon': 0.01,
+		'space': 1.5,
+		'romancing': 1
+	}
+	# results = rated_and_weighted_search(es_client, weighted_queries)
+	# show_results(results)
+	# print("\n---------------------------\n")
+	# results = rated_and_weighted_search_new(es_client, weighted_queries)
+	# show_results(results)
+	results = rated_final(es_client, weighted_queries, description_boost=1, title_boost=5)
+	show_results(results)
+	print("\n---------------------------\n")
+	results = rated_final(es_client, weighted_queries, description_boost=5, title_boost=0.1)
+	print("\n---------------------------\n")
+	results = rated_final(es_client, weighted_queries, description_boost=5, title_boost=0)
+	show_results(results)
 
 
 WORDS = [
