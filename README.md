@@ -1,6 +1,16 @@
 # DD2477-Final-Project
 Final project for DD2477
 
+## Running tests
+
+To run tests in `tests` folder, run the following command:
+```
+python -m unittest {test_file_name}
+```
+
+E.g. `python -m unittest connection_test.py`.
+
+
 ## Structure of data stored in Elasticsearch
 Two indexes are maintained INSERT INDEX NAMES HERE. 
 
