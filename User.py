@@ -1,10 +1,11 @@
 from datetime import datetime
 from elasticsearch import Elasticsearch
+import math
 
 class UserProfile:
     def __init__(self, es_host='localhost', es_port=9200):
         # Connect to the local Elasticsearch instance
-        self.es = Elasticsearch([{'host': 'localhost', 'port': 9200, "scheme": "https"}], basic_auth=('elastic', 'l0F4vPc0pD=0kYYD-oq5'), verify_certs=False)
+        self.es = Elasticsearch([{"host":"localhost", "port":9200, "scheme": "https"}], basic_auth=('elastic', 'derpoVrWlzrjV*Au7e9r'), verify_certs=False)
 
         # Check if the connection is successful
         if self.es.ping():
@@ -27,6 +28,7 @@ class UserProfile:
 
     def add_book(self, username, book_name):
         """ Add a book to the user's read list and optionally update tags. """
+        self.calc_tags(username, book_name)
         self.es.update(
             index='user_profiles',
             id=username,
@@ -41,6 +43,29 @@ class UserProfile:
                     }
                 }
         )
+        
+    def calc_tags(self, username, book_name):
+        result = self.es.search(index="goodreads", query={"match": {"name": book_name}})
+        for hit in result['hits']['hits']:
+            abstract = hit["_source"]['description']
+            description = abstract.split()
+            
+            
+            for tok in description: 
+                # Calculate score
+                tf_dt = len([i for i in description if i==tok])
+                N = 1000
+                
+                temp = self.es.search(index="goodreads", body={"query": {"match": {"description": tok}}, "size": 1000})
+
+                df_t = len(temp['hits']['hits'])
+                
+                idf_t = math.log(N/(df_t + 1))
+                
+                len_d = len(description)
+                weight = (tf_dt * idf_t) / len_d
+                
+                self.add_tag_with_weight(username, tok, weight)
 
     def add_tag_with_weight(self, username, tag, weight):
         """ Add or update a tag and its weight for the user. """
@@ -118,7 +143,7 @@ class UserProfile:
                         ctx._source.books.remove(ctx._source.books.indexOf(params.book));
                     }
                     ''',
-                    'params': {'book': book_name}
+                    'params': {'name': book_name}
                 }
             }
         )
@@ -146,20 +171,12 @@ class UserProfile:
 
 
 # Example usage
-user_manager = UserProfile()
-
-# Assuming 'john_doe' has tags with weights
-normalized_tags = user_manager.get_normalized_tags('john_doe')
-print("Normalized tags and weights for John Doe:", normalized_tags)
-
-
-
 
 # Initialize the UserProfile manager
 user_manager = UserProfile()
 
 # Create a new user profile
-# user_manager.create_user_profile('john_doe', 'secure_password123')
+user_manager.create_user_profile('john_doe', 'secure_password123')
 
 # # Add a book to the user's profile
 user_manager.add_book('john_doe', 'The Hunger Games')
@@ -188,5 +205,5 @@ print("tags: ", tags)
 
 # user_manager.remove_book("john_doe", "The Hunger Games")
 
-normalized_tags = user_manager.get_normalized_tags('john_doe')
-print("Normalized tags and weights for John Doe:", normalized_tags)
+#normalized_tags = user_manager.get_normalized_tags('john_doe')
+#print("Normalized tags and weights for John Doe:", normalized_tags)
