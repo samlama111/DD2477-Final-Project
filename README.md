@@ -1,6 +1,21 @@
 # DD2477-Final-Project
 Final project for DD2477
 
+## Installation
+
+To install the app, install the required packages by running the following command:
+```
+pip install -r requirements.txt
+``` 
+
+## Running the app
+
+To run the app, run the following command:
+```
+flask --app app run
+```
+
+
 ## Running tests
 
 To run tests in `tests` folder, run the following command:

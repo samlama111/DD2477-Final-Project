@@ -1,54 +1,44 @@
-from elasticsearch import Elasticsearch
+from es_connection import create_index
+from uuid import uuid4
+
 
 class Book:
-    def __init__(self, index_name='books', host='localhost', port=9200):
+    def __init__(self, es_connection_object, index_name="books"):
         self.index_name = index_name
-        self.es = Elasticsearch([{'host': 'localhost', 'port': 9200, "scheme": "https"}], basic_auth=('elastic', 'l0F4vPc0pD=0kYYD-oq5'), verify_certs=False)
+        self.es = es_connection_object
 
-
-        # Create index if it doesn't exist
-        if not self.es.indices.exists(index=self.index_name):
-            self.create_index()
-
-    def create_index(self):
         mapping = {
-            'mappings': {
-                'properties': {
-                    'title': {'type': 'text'},
-                    'description': {'type': 'text'},
-                    'tags': {'type': 'keyword'},
-                    'url': {'type' : 'text'}
+            "mappings": {
+                "properties": {
+                    "title": {"type": "text"},
+                    "description": {"type": "text"},
+                    "tags": {"type": "keyword"},
+                    "url": {"type": "text"},
                 }
             }
         }
-        self.es.indices.create(index=self.index_name, body=mapping)
+        # Create index if it doesn't exist
+        create_index(self.index_name, mapping)
 
-    def add_book(self, title, description, tags=[], url = '', book_id=None):
+    def add_book(self, title, description, tags=[], url="", book_id=None):
         if not book_id:
             book_id = str(uuid4())  # Generate a UUID if book_id is not provided
         doc = {
-            'title': title,
-            'description': description,
-            'tags': tags,
-            'url' : url,
+            "title": title,
+            "description": description,
+            "tags": tags,
+            "url": url,
         }
         self.es.index(index=self.index_name, id=book_id, body=doc)
 
     def search_books(self, query):
-        search_body = {
-            'query': {
-                'match': {
-                    'title': query
-                }
-            }
-        }
+        search_body = {"query": {"match": {"title": query}}}
         result = self.es.search(index=self.index_name, body=search_body)
-        return result['hits']['hits']
+        return result["hits"]["hits"]
 
     def get_book_details(self, book_id):
         result = self.es.get(index=self.index_name, id=book_id)
-        return result['_source']
-
+        return result["_source"]
 
 
 # # Initialize Book object
