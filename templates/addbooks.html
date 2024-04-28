@@ -76,7 +76,7 @@
 
                         // Create and add book image
                         var img = document.createElement('img');
-                        img.src = 'https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1586722975i/2767052.jpg' //book['url']; // Assuming 'url' is the correct path to the image
+                        img.src = book['_source']['img_url'];
                         img.className = 'book-image'; // Apply styles to the image
                         div.appendChild(img);
     
