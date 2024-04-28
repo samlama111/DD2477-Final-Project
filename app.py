@@ -11,6 +11,7 @@ from flask import (
 from werkzeug.security import generate_password_hash, check_password_hash
 from Books import *
 from User import *
+from Books import ScrapedBook
 from es_connection import es, check_connection
 
 
@@ -98,6 +99,36 @@ def handle_add_book():
     print("inside handle add book")
     res = make_response(jsonify({"message": "Book added successfully!"}), 200)
     return res
+
+
+@app.route("/scraper/addbook", methods=["POST"])
+def add_book():
+    id = request.json["id"]
+    name = request.json["name"]
+    author = request.json["author"]
+    description = request.json["description"]
+    rating = request.json["rating"]
+    num_ratings = request.json["num_ratings"]
+    num_reviews = request.json["num_reviews"]
+    genres = request.json["genres"]
+    url = request.json["url"]
+    image_url = request.json["image_url"]
+
+    new_book = ScrapedBook(
+        id,
+        name,
+        author,
+        description,
+        rating,
+        num_ratings,
+        num_reviews,
+        genres,
+        url,
+        image_url,
+    )
+
+    book_manager.add_book(id, new_book)
+    return jsonify({"message": f"Book '{name}' added successfully!"})
 
 
 if __name__ == "__main__":

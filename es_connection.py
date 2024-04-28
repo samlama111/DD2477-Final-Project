@@ -21,3 +21,11 @@ def create_index(index_name, mapping):
         print(f"Index '{index_name}' created successfully.")
     else:
         print(f"Index '{index_name}' already exists.")
+
+
+def delete_index(index_name):
+    if es.indices.exists(index=index_name):
+        es.indices.delete(index=index_name)
+        print(f"Index '{index_name}' deleted successfully.")
+    else:
+        print(f"Index '{index_name}' does not exist.")
