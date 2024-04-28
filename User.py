@@ -1,12 +1,10 @@
-from es_connection import check_connection, create_index
+from es_connection import create_index
 
 
 class UserProfile:
     def __init__(self, es_connection_object, index_name="user_profiles"):
         self.es = es_connection_object
         self.index_name = index_name
-
-        check_connection()
 
         mapping = {
             "mappings": {
@@ -76,8 +74,9 @@ class UserProfile:
 
     def get_user_profile(self, username):
         """Retrieve a user profile by username."""
-        response = self.es.get(index=self.index_name, id=username)
-        return response["_source"] if response["found"] else None
+        return self.es.search(
+            index=self.index_name, body={"query": {"match": {"username": username}}}
+        )
 
     def delete_user_profile(self, username):
         """Delete a user profile from the index"""

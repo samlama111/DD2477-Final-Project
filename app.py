@@ -11,7 +11,7 @@ from flask import (
 from werkzeug.security import generate_password_hash, check_password_hash
 from Books import *
 from User import *
-from es_connection import es
+from es_connection import es, check_connection
 
 
 app = Flask(__name__)
@@ -20,6 +20,8 @@ app.config["SECRET_KEY"] = "your_secret_key_here"
 user_manager = UserProfile(es)
 
 book_manager = Book(es)
+
+check_connection()
 
 
 @app.route("/")
@@ -36,9 +38,7 @@ def login():
         password = request.form["password"]
 
         # Search user in Elasticsearch
-        res = es.search(
-            index="user_profiles", body={"query": {"match": {"username": username}}}
-        )
+        res = user_manager.get_user_profile(username)
         if res["hits"]["total"]["value"] > 0:
             user = res["hits"]["hits"][0]["_source"]
             if check_password_hash(user["password"], password):
@@ -56,15 +56,10 @@ def register():
         hashed_password = generate_password_hash(password)
 
         # Check if user already exists
-        res = es.search(
-            index="user_profiles", body={"query": {"match": {"username": username}}}
-        )
+        res = user_manager.get_user_profile(username)
         if res["hits"]["total"]["value"] == 0:
             # Add new user to Elasticsearch
-            es.index(
-                index="user_profiles",
-                body={"username": username, "password": hashed_password},
-            )
+            user_manager.create_user_profile(username, hashed_password)
             return redirect(url_for("login"))
         return "Username already exists"
     return render_template("register.html")
