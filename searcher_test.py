@@ -70,13 +70,13 @@ def create_profile(client: Elasticsearch, username: str, book_ids: list[str]):
 		{
 			"name": str
 			"books": [str]
-			"gen_weight": dict(str, float)
-			"abs_weight": dict(str, float)
+			"gen_weights": dict(str, float)
+			"abs_weights": dict(str, float)
 		}
 	"""
 	books = []
-	gen_weight = {}
-	abs_weight = {}
+	gen_weights = {}
+	abs_weights = {}
 	for book_id in book_ids:
 		try:
 			resp = client.get(index=BOOK_INDEX, id=book_id)
@@ -85,25 +85,25 @@ def create_profile(client: Elasticsearch, username: str, book_ids: list[str]):
 			continue
 		book = resp["_source"]
 
-		# Add to abs_weight
+		# Add to abs_weights
 		split_abstract = book["abstract"].split()
 		for tok in split_abstract:
 			fixed_tok = ''.join(ch for ch in tok if ch.isalnum())
 			if len(fixed_tok) > 0:
-				abs_weight[fixed_tok] = abs_weight.get(fixed_tok, 0) + 1
+				abs_weights[fixed_tok] = abs_weights.get(fixed_tok, 0) + 1
 
-		# Add to gen_weight
+		# Add to gen_weights
 		genres = book["genres"]
 		for genre in genres:
-			gen_weight[genre] = gen_weight.get(genre, 0) + 1
+			gen_weights[genre] = gen_weights.get(genre, 0) + 1
 
 		books.append(book_id)
 	
 	profile = {
 		"name": username,
 		"books": books,
-		"gen_weight": gen_weight,
-		"abs_weight": abs_weight
+		"gen_weights": gen_weights,
+		"abs_weights": abs_weights
 	}
 
 	client.index(index=PROFILE_INDEX, document=profile, id=username)

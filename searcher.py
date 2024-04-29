@@ -40,8 +40,8 @@ class Searcher:
 		Necessary fields in user_profile:
 		{
 			"books": [str]
-			"gen_weight": dict(str, float)
-			"abs_weight": dict(str, float)
+			"gen_weights": dict(str, float)
+			"abs_weights": dict(str, float)
 		}
 
 		:param query: Query in string form from user
@@ -50,8 +50,8 @@ class Searcher:
 		:return: Results in an ordered list along with their respective scores in a second
 		"""
 		# Construct query
-		q_genre = self._construct_query_string(query, user_profile["gen_weight"], len(user_profile["books"]))
-		q_abstract = self._construct_query_string(query, user_profile["abs_weight"], len(user_profile["books"]))
+		q_genre = self._construct_query_string(query, user_profile["gen_weights"], len(user_profile["books"]))
+		q_abstract = self._construct_query_string(query, user_profile["abs_weights"], len(user_profile["books"]))
 		query_body = {
 			"query" : {
 				"function_score" : {
@@ -89,7 +89,6 @@ class Searcher:
 		
 		# Query Elasticsearch
 		resp = self.client.search(index=self.book_index, body=query_body)
-		
 		# Filter results
 		results = []
 		scores = []
@@ -103,7 +102,6 @@ class Searcher:
 			i += 1
 
 		return results, scores
-		
 
 	def _construct_query_string(self, q0, br, abs_Br):
 		query_list = [f'({t})^{w * self.BETA / abs_Br}' for t, w in br.items()]
