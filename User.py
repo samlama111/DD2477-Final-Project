@@ -13,7 +13,8 @@ class UserProfile:
                     "username": {"type": "text"},
                     "password": {"type": "text"},
                     "books": {"type": "keyword"},
-                    "tags": {"type": "object"},
+                    "abs_weights": {"type": "object"},
+                    "gen_weights": {"type": "object"},
                 }
             }
         }
@@ -232,7 +233,7 @@ class UserProfile:
 
 
 # # Initialize the UserProfile manager
-user_manager = UserProfile()
+#user_manager = UserProfile()
 
 # # Create a new user profile
 # # user_manager.create_user_profile('john_doe', 'secure_password123')
@@ -255,18 +256,18 @@ user_manager = UserProfile()
 #Delete user profile
 #user_manager.delete_user_profile("john_doe")
 
-usernames = user_manager.list_all_usernames()
-print("Usernames:")
-print(usernames)
+# usernames = user_manager.list_all_usernames()
+# print("Usernames:")
+# print(usernames)
 
-books = user_manager.get_books_read_by_user("john_doe")
-print("books: ", books)
+# books = user_manager.get_books_read_by_user("john_doe")
+# print("books: ", books)
 
-abs_weights = user_manager.get_abs_weights("john_doe")
-print("abs_weights: ", abs_weights)
+# abs_weights = user_manager.get_abs_weights("john_doe")
+# print("abs_weights: ", abs_weights)
 
-gen_weights = user_manager.get_gen_weights("john_doe")
-print("gen_weights: ", gen_weights)
+# gen_weights = user_manager.get_gen_weights("john_doe")
+# print("gen_weights: ", gen_weights)
 
 # user_manager.remove_book("john_doe", "The Hunger Games")
 
