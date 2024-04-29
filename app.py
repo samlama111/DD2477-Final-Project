@@ -44,6 +44,7 @@ def login():
             user = res["hits"]["hits"][0]["_source"]
             if check_password_hash(user["password"], password):
                 session["logged_in"] = True
+                session["username"] = username
                 return redirect(url_for("addbooks"))
         return "Login Failed"
     return render_template("login.html")
@@ -54,7 +55,7 @@ def register():
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
-        hashed_password = generate_password_hash(password)
+        hashed_password = generate_password_hash(password, method='pbkdf2')
 
         # Check if user already exists
         res = user_manager.get_user_profile(username)
@@ -69,12 +70,15 @@ def register():
 @app.route("/search", methods=["GET"])
 def search():
     query = request.args.get("query", "")
-    if query:
-        books = book_manager.search_books(query)
-        res = make_response(jsonify(books), 200)
-        # for book in books:
-        #     print(book['_source']["title"] + " - " + book['_source']['description'])
+    username = session["username"]
+    print("username in search: ", username)
+    user_profile = user_manager.get_user_profile(username)
+    user_profile_source = user_profile["hits"]["hits"][0]["_source"]
 
+    if query:
+        books = book_manager.search_books(query, user_profile_source)
+        res = make_response(jsonify(books), 200)
+        # TODOOO
         return res
     return render_template("search.html")
 
@@ -94,9 +98,10 @@ def addbooks():
 
 @app.route("/handle_add_book", methods=["POST"])
 def handle_add_book():
-    # book_title = request.json['title']
-    # add_book_to_user(book_title)
-    print("inside handle add book")
+    book_title = request.json['title']
+    username = session["username"]
+    user_manager.add_book(username, book_title)
+    print("inside handle add book", book_title, username )
     res = make_response(jsonify({"message": "Book added successfully!"}), 200)
     return res
 

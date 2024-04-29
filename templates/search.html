@@ -35,26 +35,15 @@
     </div>
 
     <script>
-        // document.getElementById('searchForm').onsubmit = function(event) {
-        //     event.preventDefault();
-        //     var query = document.getElementById('searchQuery').value;
-        //     fetch('/search?query=' + encodeURIComponent(query))
-        //         .then(response => response.json())
-        //         .then(data => {
-        //             var resultsContainer = document.getElementById('searchResults');
-        //             resultsContainer.innerHTML = ''; // Clear previous results
-        //             data.forEach(book => {
-        //                 var div = document.createElement('div');
-        //                 div.textContent = book['_source']["title"] + " - " + book['_source']['description']; // Adjust according to your book data structure
-        //                 resultsContainer.appendChild(div);
-        //             });
-        //         })
-        //         .catch(error => console.error('Error fetching data: ', error));
-        // };
+        function getUsername() {
+                return localStorage.getItem('username'); // Retrieve the username from local storage
+            }
+
         document.getElementById('searchForm').onsubmit = function(event) {
             event.preventDefault();
             var query = document.getElementById('searchQuery').value;
-            fetch('/search?query=' + encodeURIComponent(query))
+            var current_username = getUsername();
+            fetch('/search?query=' + encodeURIComponent(query) + '&username=' + encodeURIComponent(current_username))
                 .then(response => response.json())
                 .then(data => {
                     var resultsContainer = document.getElementById('searchResults');
@@ -65,13 +54,11 @@
 
                         // Create and add book image
                         var img = document.createElement('img');
-                        img.src = book['_source']['img_url'];
+                        img.src = book['_source']['img_url'];//book['url']; // Assuming 'url' is the correct path to the image
                         img.className = 'book-image'; // Apply styles to the image
                         div.appendChild(img);
     
                         // Add book information
-                        // var textContent = document.createTextNode(book['_source']["title"] + " - " + book['_source']['description']);
-                        // div.appendChild(textContent);
 
                         // Create a container for the text content
                         var textDiv = document.createElement('div');

@@ -57,7 +57,7 @@ class Book:
         # TODO: Check if book already exists
         self.es.index(index=self.index_name, id=id, body=doc)
 
-    def search_books(self, query):
+    def search_books(self, query, user_profile):
         search_body = {"query": {"match": {"title": query}}}
         result = self.es.search(index=self.index_name, body=search_body)
         return result["hits"]["hits"]
