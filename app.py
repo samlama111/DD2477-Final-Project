@@ -70,13 +70,14 @@ def register():
 def search():
     query = request.args.get("query", "")
     if query:
-        username = request.form["username"] # TODO: This does not seem to be how you fetch the current username... -Theo
+        username = session["username"]
         user_profile = user_manager.get_user_profile(username)
+        user_profile_source = user_profile["hits"]["hits"][0]["_source"]
 
         # TODO: previously this returned a list of dictionaries where each books data was found thru '_source' key.
         #       the new implementation returns the book data directly, removing the '_source' go between.
         #       I'm not fully clear on how make_response handles this, cannot check until users have desired format. -Theo
-        books = book_manager.search_books(query, user_profile)
+        books = book_manager.search_books(query, user_profile_source)
         res = make_response(jsonify(books), 200)
         # for book in books:
         #     print(book['_source']["title"] + " - " + book['_source']['description'])
