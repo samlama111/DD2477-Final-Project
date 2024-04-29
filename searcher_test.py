@@ -131,9 +131,7 @@ first_time = False
 def test():
 	client = get_client()
 	
-	searcher = Searcher(client)
-	searcher.MAIN_INDEX_NAME = BOOK_INDEX
-	searcher.USER_INDEX_NAME = PROFILE_INDEX
+	searcher = Searcher(client, BOOK_INDEX)
 	searcher.ABSTRACT_BOOST = 1
 	searcher.GENRE_BOOST = 5
 	searcher.ALPHA = 1.0
@@ -141,8 +139,10 @@ def test():
 	
 	if first_time: setup(client)
 
+	user_profile = client.get(index=PROFILE_INDEX, id='theoi')["_source"]
+
 	query = "family tragedy"
-	results, scores = searcher.query(query, 'theoi')
+	results, scores = searcher.query(query, user_profile)
 	show_results(results, scores)
 
 if __name__ == '__main__':
