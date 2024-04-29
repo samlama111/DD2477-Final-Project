@@ -54,7 +54,7 @@ def register():
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
-        hashed_password = generate_password_hash(password)
+        hashed_password = generate_password_hash(password, method='pbkdf2')
 
         # Check if user already exists
         res = user_manager.get_user_profile(username)

@@ -135,9 +135,9 @@ def test():
 	searcher.MAIN_INDEX_NAME = BOOK_INDEX
 	searcher.USER_INDEX_NAME = PROFILE_INDEX
 	searcher.ABSTRACT_BOOST = 1
-	searcher.GENRE_BOOST = 3
+	searcher.GENRE_BOOST = 5
 	searcher.ALPHA = 1.0
-	searcher.BETA = 0.75
+	searcher.BETA = 0.05
 	
 	if first_time: setup(client)
 
