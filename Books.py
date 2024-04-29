@@ -1,70 +1,93 @@
-from elasticsearch import Elasticsearch
+from es_connection import create_index
+
 
 class Book:
-    def __init__(self, index_name='books', host='localhost', port=9200):
+    def __init__(self, es_connection_object, index_name="books"):
         self.index_name = index_name
-        self.es = Elasticsearch([{'host': 'localhost', 'port': 9200, "scheme": "https"}], basic_auth=('elastic', 'l0F4vPc0pD=0kYYD-oq5'), verify_certs=False)
+        self.es = es_connection_object
 
-
-        # Create index if it doesn't exist
-        if not self.es.indices.exists(index=self.index_name):
-            self.create_index()
-
-    def create_index(self):
+        # delete_index(self.index_name)
+        """"
+        Format of book documents in ES:
+        {
+            "title": str,
+            "author": str,
+            "abstract": str,
+            "genres": [str],
+            "rating": float,
+            "n_ratings": int,
+            "n_reviews": int,
+            "book_id": str,
+            "url": str,
+            "img_url": str,
+        }
+        """
         mapping = {
-            'mappings': {
-                'properties': {
-                    'title': {'type': 'text'},
-                    'description': {'type': 'text'},
-                    'tags': {'type': 'keyword'},
-                    'url': {'type' : 'text'}
+            "mappings": {
+                "properties": {
+                    "title": {"type": "text"},
+                    "author": {"type": "text"},
+                    "description": {"type": "text"},
+                    "genres": {"type": "keyword"},  # Is this correct?
+                    "rating": {"type": "float"},
+                    "n_ratings": {"type": "integer"},
+                    "n_reviews": {"type": "integer"},
+                    "book_id": {"type": "keyword"},
+                    "url": {"type": "text"},
+                    "img_url": {"type": "text"},
                 }
             }
         }
-        self.es.indices.create(index=self.index_name, body=mapping)
+        # Create index if it doesn't exist
+        create_index(self.index_name, mapping)
 
-    def add_book(self, title, description, tags=[], url = '', book_id=None):
-        if not book_id:
-            book_id = str(uuid4())  # Generate a UUID if book_id is not provided
+    def add_book(self, id, new_book):
         doc = {
-            'title': title,
-            'description': description,
-            'tags': tags,
-            'url' : url,
+            "title": new_book.title,
+            "author": new_book.author,
+            "description": new_book.description,
+            "genres": new_book.genres,
+            "rating": new_book.rating,
+            "n_ratings": new_book.n_ratings,
+            "n_reviews": new_book.n_reviews,
+            "book_id": id,
+            "url": new_book.url,
+            "img_url": new_book.image_url,
         }
-        self.es.index(index=self.index_name, id=book_id, body=doc)
+        # TODO: Check if book already exists
+        self.es.index(index=self.index_name, id=id, body=doc)
 
     def search_books(self, query):
-        search_body = {
-            'query': {
-                'match': {
-                    'title': query
-                }
-            }
-        }
+        search_body = {"query": {"match": {"title": query}}}
         result = self.es.search(index=self.index_name, body=search_body)
-        return result['hits']['hits']
+        return result["hits"]["hits"]
 
     def get_book_details(self, book_id):
         result = self.es.get(index=self.index_name, id=book_id)
-        return result['_source']
+        return result["_source"]
 
 
-
-# # Initialize Book object
-# book_manager = Book()
-
-# # Add a book
-# # book_manager.add_book('The Great Gatsby', 'A novel by F. Scott Fitzgerald', ['novel', 'fiction'], '123')
-
-# # Search for books
-# results = book_manager.search_books('Gatsby')
-# for hit in results:
-#     print("hits")
-#     print(hit['_source'])
-
-# # Get book details
-# book_details = book_manager.get_book_details('123')
-# print("book details", book_details)
-
-# book_manager.add_book('The Hunger Games', 'A thriller novel', ['novel', 'thriller'], '456')
+class ScrapedBook:
+    def __init__(
+        self,
+        id,
+        name,
+        author,
+        description,
+        rating,
+        num_ratings,
+        num_reviews,
+        genres,
+        url,
+        image_url,
+    ):
+        self.book_id = id
+        self.title = name
+        self.author = author
+        self.description = description
+        self.rating = rating
+        self.n_ratings = num_ratings
+        self.n_reviews = num_reviews
+        self.genres = genres
+        self.url = url
+        self.image_url = image_url

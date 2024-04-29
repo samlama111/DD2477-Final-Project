@@ -5,9 +5,13 @@
 
 
 # useful for handling different item types with a single interface
-from itemadapter import ItemAdapter
+import requests
 
 
 class GoodreadsPipeline:
     def process_item(self, item, spider):
+        api_url = "http://localhost:5000/"
+        api_endpoint = "scraper/addbook"
+        full_url = api_url + api_endpoint
+        requests.post(full_url, json=dict(item))
         return item
