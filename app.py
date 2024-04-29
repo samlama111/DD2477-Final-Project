@@ -70,7 +70,14 @@ def register():
 def search():
     query = request.args.get("query", "")
     if query:
-        books = book_manager.search_books(query)
+        username = session["username"]
+        user_profile = user_manager.get_user_profile(username)
+        user_profile_source = user_profile["hits"]["hits"][0]["_source"]
+
+        # TODO: previously this returned a list of dictionaries where each books data was found thru '_source' key.
+        #       the new implementation returns the book data directly, removing the '_source' go between.
+        #       I'm not fully clear on how make_response handles this, cannot check until users have desired format. -Theo
+        books = book_manager.search_books(query, user_profile_source)
         res = make_response(jsonify(books), 200)
         # for book in books:
         #     print(book['_source']["title"] + " - " + book['_source']['description'])
@@ -83,7 +90,8 @@ def search():
 def addbooks():
     query = request.args.get("query", "")
     if query:
-        books = book_manager.search_books(query)
+        # TODO: This piece of code does not seem to be used, instead /addbooks calls the same code as /search (atleast judging by my tests) -Theo
+        books = book_manager.search_book_titles(query)
         res = make_response(jsonify(books), 200)
         # for book in books:
         #     print(book['_source']["title"] + " - " + book['_source']['description'])

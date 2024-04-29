@@ -1,10 +1,13 @@
 from es_connection import create_index
+from searcher import Searcher
 
 
 class Book:
     def __init__(self, es_connection_object, index_name="books"):
         self.index_name = index_name
         self.es = es_connection_object
+
+        self.searcher = Searcher(self.es, index_name)
 
         # delete_index(self.index_name)
         """"
@@ -57,7 +60,11 @@ class Book:
         # TODO: Check if book already exists
         self.es.index(index=self.index_name, id=id, body=doc)
 
-    def search_books(self, query):
+    def search_books(self, query, user_profile):
+        result, _scores = self.searcher.query(query, user_profile)
+        return result
+    
+    def search_book_titles(self, query):
         search_body = {"query": {"match": {"title": query}}}
         result = self.es.search(index=self.index_name, body=search_body)
         return result["hits"]["hits"]
