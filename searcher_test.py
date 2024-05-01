@@ -6,9 +6,16 @@ Rudimentary test code for searcher class,
 from searcher import Searcher
 from elasticsearch import Elasticsearch
 from elasticsearch import NotFoundError
+from dotenv import load_dotenv
+import os
 
-BOOK_INDEX = "searcher_test_books"
-PROFILE_INDEX = "searcher_test_profiles"
+load_dotenv()
+CLOUD_ID = os.getenv("CLOUD_ID")
+API_KEY = os.getenv("API_KEY")
+es = Elasticsearch(cloud_id=CLOUD_ID, api_key=API_KEY)
+
+BOOK_INDEX = "books"
+PROFILE_INDEX = "user_profiles"
 
 def build_booklist(client: Elasticsearch):
 	book1 = {
@@ -129,17 +136,13 @@ def get_client(password = 'lrFrrca77CLpFPZlxZwh'):
 
 first_time = False 
 def test():
-	client = get_client()
-	
-	searcher = Searcher(client, BOOK_INDEX)
+	searcher = Searcher(es, BOOK_INDEX)
 	searcher.ABSTRACT_BOOST = 1
 	searcher.GENRE_BOOST = 5
 	searcher.ALPHA = 1.0
 	searcher.BETA = 0.05
-	
-	if first_time: setup(client)
 
-	user_profile = client.get(index=PROFILE_INDEX, id='theoi')["_source"]
+	user_profile = es.get(index=PROFILE_INDEX, id='theoi')["_source"]
 
 	query = "family tragedy"
 	results, scores = searcher.query(query, user_profile)

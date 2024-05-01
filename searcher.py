@@ -98,7 +98,7 @@ class Searcher:
 		while (len(results) < self.MAX_HITS) and (i < len(hits)):
 			if hits[i]["_score"] < self.RELEVANCE_THRESHOLD:
 				break
-			results.append(hits[i])
+			results.append(hits[i]["_source"])
 			scores.append(hits[i]["_score"])
 			i += 1
 
