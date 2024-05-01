@@ -65,7 +65,7 @@ class Searcher:
 							},
 							{"query_string": {
 								"query": q_abstract,
-								"default_field": "abstract",
+								"default_field": "description",
 								"boost": self.ABSTRACT_BOOST
 								}
 							},
@@ -100,6 +100,7 @@ class Searcher:
 			results.append(hits[i])
 			scores.append(hits[i]["_score"])
 			i += 1
+		
 
 		return results, scores
 

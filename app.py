@@ -18,6 +18,8 @@ from es_connection import es, check_connection
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "your_secret_key_here"
 
+# es.indices.delete(index="user_profiles")
+
 user_manager = UserProfile(es)
 
 book_manager = Book(es)

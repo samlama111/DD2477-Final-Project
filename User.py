@@ -52,7 +52,7 @@ class UserProfile:
         )
         
     def calc_abs(self, username, book_name):
-        result = self.es.search(index="goodreads", query={"match": {"name": book_name}})
+        result = self.es.search(index="books", query={"match": {"name": book_name}})
         for hit in result['hits']['hits']:
             abstract = hit["_source"]['description']
             abstract = abstract.split()
@@ -63,7 +63,7 @@ class UserProfile:
                 tf_dt = len([i for i in abstract if i==tok])
                 N = 1000
                 
-                temp = self.es.search(index="goodreads", body={"query": {"match": {"description": tok}}, "size": 1000})
+                temp = self.es.search(index="books", body={"query": {"match": {"description": tok}}, "size": 1000})
 
                 df_t = len(temp['hits']['hits'])
                 
@@ -75,7 +75,7 @@ class UserProfile:
                 self.add_abs_with_weight(username, tok, weight)
                 
     def calc_gen(self, username, book_name):
-        result = self.es.search(index="goodreads", query={"match": {"name": book_name}})
+        result = self.es.search(index="books", query={"match": {"name": book_name}})
         for hit in result['hits']['hits']:
             genres = hit["_source"]['genres']
             
@@ -85,7 +85,7 @@ class UserProfile:
                 tf_dt = len([i for i in genres if i==genre])
                 N = 1000
                 
-                temp = self.es.search(index="goodreads", body={"query": {"match": {"genres": genre}}, "size": 1000})
+                temp = self.es.search(index="books", body={"query": {"match": {"genres": genre}}, "size": 1000})
 
                 df_t = len(temp['hits']['hits'])
                 
