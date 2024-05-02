@@ -63,6 +63,26 @@ button {
     margin-top: 10px; /* Space between the password input and the button */
 }
 
+.continue-search-link {
+    margin-top: 1.5px;
+    color: #f9fefd; /* Use a bright color for visibility */
+    font-size: 0.9em; /* Increase the font size */
+    /*padding: 10px 20px; /* Add padding to make the link larger and easier to click */
+    background-color: #040404; /* A light background to stand out from the rest */
+    text-decoration: none; /* Remove underline to clean up the appearance */
+    /*border: 0.5px solid #007BFF; /* Add a border to highlight the link */
+    /*border-radius: 3px; /* Round the corners for a modern look */
+    display: inline-block; /* Ensures the padding and border are applied correctly */
+    transition: background-color 0.3s, color 0.3s; /* Smooth transition for hover effect */
+}
+
+.continue-search-link:hover {
+    background-color: #007BFF; /* Change background on hover */
+    color: white; /* Change text color on hover */
+    cursor: pointer; /* Change cursor to indicate clickability */
+}
+
+
 /* Additional styles for search result items */
 
 .add-book-button {
