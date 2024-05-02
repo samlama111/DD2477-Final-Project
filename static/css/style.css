@@ -8,6 +8,13 @@ body, html {
     background-color: #f0f0f0; /* Example background color */
 }
 
+.container {
+    text-align: center;
+    padding-top: 10px;
+    width: 90%;
+    margin: auto;
+}
+
 .login-container {
     display: flex;
     flex-direction: column;
@@ -33,6 +40,8 @@ body, html {
 .logo {
     width: 80%; /* Adjust the width as needed */
     margin-bottom: 20px;
+    height: auto;
+    margin: 0
 }
 
 input[type="text"], input[type="password"] {

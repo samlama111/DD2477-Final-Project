@@ -86,8 +86,13 @@ def search():
 @app.route("/addbooks", methods=["GET"])
 def addbooks():
     query = request.args.get("query", "")
+    print("query addbooks: ", query)
+    username = session["username"]
+    # print("username in search: ", username)
+    user_profile = user_manager.get_user_profile(username)
+    user_profile_source = user_profile["hits"]["hits"][0]["_source"]
     if query:
-        books = book_manager.search_books(query)
+        books = book_manager.search_books(query, user_profile_source)
         res = make_response(jsonify(books), 200)
         # for book in books:
         #     print(book['_source']["title"] + " - " + book['_source']['description'])
