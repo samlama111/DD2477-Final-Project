@@ -21,7 +21,7 @@ app.config["SECRET_KEY"] = "your_secret_key_here"
 
 user_manager = UserProfile(supabase, es)
 
-book_manager = Book(es)
+book_manager = Book(supabase, es)
 
 check_connection()
 
@@ -73,13 +73,12 @@ def search():
     query = request.args.get("query", "")
     username = session["username"]
     user_profile = user_manager.get_user_profile(username)
-    user_profile_source = user_profile["hits"]["hits"][0]["_source"]
 
     if query:
         # TODO: previously this returned a list of dictionaries where each books data was found thru '_source' key.
         #       the new implementation returns the book data directly, removing the '_source' go between.
         #       I'm not fully clear on how make_response handles this, cannot check until users have desired format. -Theo
-        books = book_manager.search_books(query, user_profile_source)
+        books = book_manager.search_books(query, user_profile.data[0])
         res = make_response(jsonify(books), 200)
         # for book in books:
         #     print(book['_source']["title"] + " - " + book['_source']['description'])

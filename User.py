@@ -128,3 +128,21 @@ class UserProfile:
 
     def add_genre(self, username, book_id):
         self.add_tf_idf_entry(username, "genres", GENRE_TABLE, book_id)
+
+    def get_user_genre_weights(self, username):
+        existing_weights = (
+            self.pg.table(GENRE_TABLE)
+            .select("*")
+            .eq("user_username", username)
+            .execute()
+        ).data
+        return {item["term"]: item["weight"] for item in existing_weights}
+
+    def get_user_abstract_weights(self, username):
+        existing_weights = (
+            self.pg.table(DESCRIPTION_TABLE)
+            .select("*")
+            .eq("user_username", username)
+            .execute()
+        ).data
+        return {item["term"]: item["weight"] for item in existing_weights}
