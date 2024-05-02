@@ -1,6 +1,7 @@
 import json
 import re
 import scrapy
+import html2text
 from goodreads.items import GoodreadsItem
 
 
@@ -13,7 +14,8 @@ class GoodreadsSpider(scrapy.Spider):
     def start_requests(self):
         # Range should approximately match the size of the Davis dataset (17478 documents).
         # With each page being 100 books, we should go through (at least) 175 iterations.
-        for i in range(1, 10):
+        # As there are only 100 pages, we will stop at 100.
+        for i in range(1, 101):
             yield scrapy.Request(
                 url=f"{self.list_url}?page={i}",
                 callback=self.parse_book_list,
@@ -45,9 +47,11 @@ class GoodreadsSpider(scrapy.Spider):
         # Static content, we can extract directly using CSS or XPath selectors
         item["name"] = book_name
         description_text = response.xpath(
-            '//div[contains(@class, "BookPageMetadataSection__description")]//span[@class="Formatted"]/text()'
+            '//div[contains(@class, "BookPageMetadataSection__description")]//span[@class="Formatted"]//text()'
         ).getall()
-        item["description"] = "".join(description_text)
+        item["description"] = (
+            html2text.html2text(" ".join(description_text)).strip().replace("\n", " ")
+        )
         item["author"] = response.css("a.ContributorLink span::text").get()
         rating = response.css("div.RatingStatistics__rating::text").get()
         item["rating"] = float(rating) if rating else None
