@@ -101,7 +101,6 @@ class Searcher:
 			scores.append(hits[i]["_score"])
 			i += 1
 		
-
 		return results, scores
 
 	def _construct_query_string(self, q0, br, abs_Br):
