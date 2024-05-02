@@ -73,8 +73,6 @@ class UserProfile:
             
             weight = (tf_dt * idf_t) / len_d
             
-            print(abs)
-            
             update_action = {
                 "_index": self.index_name,
                 "_id": username,
