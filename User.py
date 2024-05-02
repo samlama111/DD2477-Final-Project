@@ -33,6 +33,7 @@ class UserProfile:
         return response
 
     def add_book(self, username, book_name):
+        print("book is in user.py: ", book_name)
         self.calc_gen(username, book_name)
         self.calc_abs(username, book_name)
         """Add a book to the user's read list and optionally update tags."""
@@ -42,11 +43,11 @@ class UserProfile:
             body={
                 "script": {
                     "source": """
-                    if (!ctx._source.books.contains(params.book)) {
-                        ctx._source.books.add(params.book);
+                    if (!ctx._source.books.contains(params.books)) {
+                        ctx._source.books.add(params.books);
                     }
                     """,
-                    "params": {"book": book_name},
+                    "params": {"books": book_name},
                 }
             },
         )
@@ -185,7 +186,7 @@ class UserProfile:
             return response['_source'].get('gen_weights', {})
         return {}
 
-    def remove_book(self, username, book_name):
+    def remove_book(self, username, book_id):
         """Remove a book from the user's read list if it exists."""
         self.es.update(
             index=self.index_name,
@@ -193,11 +194,11 @@ class UserProfile:
             body={
                 "script": {
                     "source": """
-                    if (ctx._source.books.contains(params.book)) {
-                        ctx._source.books.remove(ctx._source.books.indexOf(params.book));
+                    if (ctx._source.books.contains(params.books)) {
+                        ctx._source.books.remove(ctx._source.books.indexOf(params.books));
                     }
                     """,
-                    "params": {"book": book_name},
+                    "params": {"books": book_id},
                 }
             },
         )
