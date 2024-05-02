@@ -68,10 +68,10 @@ class Book:
 
     def search_books(self, query, user_profile):
         # Get the weights from the user profile
-        gen_weights_dict = self.user_manager.get_user_abstract_weights(
+        abs_weights_dict = self.user_manager.get_user_abstract_weights(
             user_profile.get("username")
         )
-        abs_weights_dict = self.user_manager.get_user_genre_weights(
+        gen_weights_dict = self.user_manager.get_user_genre_weights(
             user_profile.get("username")
         )
         augmented_user_profile = {
