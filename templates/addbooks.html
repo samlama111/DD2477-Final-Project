@@ -65,7 +65,7 @@
         document.getElementById('searchForm').onsubmit = function(event) {
             event.preventDefault();
             var query = document.getElementById('searchQuery').value;
-            fetch('/search?query=' + encodeURIComponent(query))
+            fetch('/addbooks?query=' + encodeURIComponent(query))
                 .then(response => response.json())
                 .then(data => {
                     var resultsContainer = document.getElementById('searchResults');

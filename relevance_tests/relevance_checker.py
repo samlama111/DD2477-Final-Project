@@ -43,9 +43,10 @@ def generate_book_list(query, username):
 		searcher.BETA = beta
 		for g_boost in G_BOOSTS:
 			searcher.GENRE_BOOST = g_boost
-			results = searcher.query(query, user_profile)
-			books.extend(results)
-			ranked_results[(beta, g_boost)] = [res['book_id'] for res in results]
+			results, _ = searcher.query(query, user_profile)
+
+			books.extend([res['_source'] for res in results])
+			ranked_results[(beta, g_boost)] = [res['_source']['book_id'] for res in results]
 	return books, ranked_results
 
 
@@ -53,7 +54,6 @@ class BookRankerApp(QMainWindow):
 	def __init__(self, query, username):
 		super().__init__()
 		self.setWindowTitle("Text Ranker")
-		self.text_index = 0
 
 		self.ratings = {}
 		self.books, self.ranked_results = generate_book_list(query, username)
@@ -93,7 +93,7 @@ class BookRankerApp(QMainWindow):
 					self.close()
 			else:
 				break
-		text = f'{self.current_book["title"]}\n{self.current_book["author"]}\n\n{self.current_book["abstract"]}'
+		text = f'{self.current_book["title"]}\n{self.current_book["author"]}\n\n{self.current_book["description"]}'
 		self.textbox.setPlainText(text)
 
 	def submit_rating(self):
@@ -106,11 +106,12 @@ class BookRankerApp(QMainWindow):
 			return
 
 		# Store rating (you can implement this part according to your requirement)
-		print(f"Text {self.text_index + 1} rating: {rating}")
+		print(f"Book {self.books[self.book_index]['title']} rating: {rating}")
+		self.rating_entry.setText("")
 
 		# Move to the next book or finish if all books are ranked
 		self.book_index += 1
-		if self.book_index < len(self.texts):
+		if self.book_index < len(self.books):
 			self.display_text()
 		else:
 			QMessageBox.information(self, "Finished", "All books have been ranked.")
