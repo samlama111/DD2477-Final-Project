@@ -108,6 +108,7 @@ def addbooks():
 @app.route("/handle_add_book", methods=["POST"])
 def handle_add_book():
     book_title = request.json['title']
+    print("Book id: ", book_title)
     username = session["username"]
     user_manager.add_book(username, book_title)
     print("inside handle add book", book_title, username )

@@ -114,7 +114,7 @@
                         addButton.textContent = 'Add Book';
                         addButton.className = 'add-book-button'; // Apply styles to the button
                         addButton.onclick = function() {
-                            add_book_to_user(book['_source']["title"], addButton);
+                            add_book_to_user(book['_source']["book_id"], addButton);
                         };
     
                         // Append the button to the result item div
