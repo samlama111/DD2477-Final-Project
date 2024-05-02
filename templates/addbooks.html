@@ -49,14 +49,13 @@
 
     <script>
 
-        function add_book_to_user(bookTitle, buttonElement) {
-                console.log("Adding book: " + bookTitle);
+        function add_book_to_user(bookId, buttonElement) {
                 fetch('/handle_add_book', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ title: bookTitle })
+                    body: JSON.stringify({ book_id: bookId })
                 })
                 .then(response => response.json())
                 .then(data => {
@@ -115,7 +114,7 @@
                         addButton.textContent = 'Add Book';
                         addButton.className = 'add-book-button'; // Apply styles to the button
                         addButton.onclick = function() {
-                            add_book_to_user(book['_source']["title"], addButton);
+                            add_book_to_user(book['_source']["book_id"], addButton);
                         };
     
                         // Append the button to the result item div

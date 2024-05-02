@@ -103,9 +103,9 @@ def addbooks():
 
 @app.route("/handle_add_book", methods=["POST"])
 def handle_add_book():
-    book_title = request.json["title"]
+    book_id = request.json["book_id"]
     username = session["username"]
-    user_manager.add_book(username, book_title)
+    user_manager.add_book(username, book_id)
     res = make_response(jsonify({"message": "Book added successfully!"}), 200)
     return res
 
