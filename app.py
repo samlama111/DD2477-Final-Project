@@ -13,12 +13,13 @@ from Books import *
 from User import *
 from Books import ScrapedBook
 from es_connection import es, check_connection
+from postgres_connection import supabase
 
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "your_secret_key_here"
 
-user_manager = UserProfile(es)
+user_manager = UserProfile(supabase, es)
 
 book_manager = Book(es)
 
@@ -39,9 +40,9 @@ def login():
         password = request.form["password"]
 
         # Search user in Elasticsearch
-        res = user_manager.get_user_profile(username)
-        if res["hits"]["total"]["value"] > 0:
-            user = res["hits"]["hits"][0]["_source"]
+        response = user_manager.get_user_profile(username)
+        if response.data:  # Check if the list is not empty
+            user = response.data[0]  # Get the first user
             if check_password_hash(user["password"], password):
                 session["logged_in"] = True
                 session["username"] = username
@@ -58,8 +59,8 @@ def register():
         hashed_password = generate_password_hash(password, method="pbkdf2")
 
         # Check if user already exists
-        res = user_manager.get_user_profile(username)
-        if res["hits"]["total"]["value"] == 0:
+        response = user_manager.get_user_profile(username)
+        if response.data.__len__() == 0:
             # Add new user to Elasticsearch
             user_manager.create_user_profile(username, hashed_password)
             return redirect(url_for("login"))
@@ -91,12 +92,8 @@ def search():
 def addbooks():
     query = request.args.get("query", "")
     if query:
-        # TODO: This piece of code does not seem to be used, instead /addbooks calls the same code as /search (atleast judging by my tests) -Theo
         books = book_manager.search_book_titles(query)
         res = make_response(jsonify(books), 200)
-        # for book in books:
-        #     print(book['_source']["title"] + " - " + book['_source']['description'])
-
         return res
     return render_template("addbooks.html")
 
