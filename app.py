@@ -18,6 +18,8 @@ from es_connection import es, check_connection
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "your_secret_key_here"
 
+# es.indices.delete(index="user_profiles")
+
 user_manager = UserProfile(es)
 
 book_manager = Book(es)
@@ -44,6 +46,7 @@ def login():
             user = res["hits"]["hits"][0]["_source"]
             if check_password_hash(user["password"], password):
                 session["logged_in"] = True
+                session["username"] = username
                 return redirect(url_for("addbooks"))
         return "Login Failed"
     return render_template("login.html")
@@ -69,10 +72,12 @@ def register():
 @app.route("/search", methods=["GET"])
 def search():
     query = request.args.get("query", "")
+    username = session["username"]
+    print("username in search: ", username)
+    user_profile = user_manager.get_user_profile(username)
+    user_profile_source = user_profile["hits"]["hits"][0]["_source"]
+
     if query:
-        username = session["username"]
-        user_profile = user_manager.get_user_profile(username)
-        user_profile_source = user_profile["hits"]["hits"][0]["_source"]
 
         # TODO: previously this returned a list of dictionaries where each books data was found thru '_source' key.
         #       the new implementation returns the book data directly, removing the '_source' go between.
@@ -102,9 +107,10 @@ def addbooks():
 
 @app.route("/handle_add_book", methods=["POST"])
 def handle_add_book():
-    # book_title = request.json['title']
-    # add_book_to_user(book_title)
-    print("inside handle add book")
+    book_title = request.json['title']
+    username = session["username"]
+    user_manager.add_book(username, book_title)
+    print("inside handle add book", book_title, username )
     res = make_response(jsonify({"message": "Book added successfully!"}), 200)
     return res
 

@@ -50,7 +50,7 @@ The index for the user profiles stores the profiles as dictionaries with the str
 {
   "name": str
   "books": [str]
-  "gen_weight": dict(str, float)
-  "abs_weight": dict(str, float)
+  "gen_weights": dict(str, float)
+  "abs_weights": dict(str, float)
 }
 ```
