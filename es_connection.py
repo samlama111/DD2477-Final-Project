@@ -3,7 +3,6 @@ from elasticsearch import Elasticsearch
 
 CLOUD_ID = os.getenv("CLOUD_ID")
 API_KEY = os.getenv("API_KEY")
-print(CLOUD_ID)
 
 # Setup Elasticsearch connection
 es = Elasticsearch(cloud_id=CLOUD_ID, api_key=API_KEY)

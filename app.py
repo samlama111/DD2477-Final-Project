@@ -18,8 +18,6 @@ from es_connection import es, check_connection
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "your_secret_key_here"
 
-# es.indices.delete(index="user_profiles")
-
 user_manager = UserProfile(es)
 
 book_manager = Book(es)
@@ -57,7 +55,7 @@ def register():
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
-        hashed_password = generate_password_hash(password, method='pbkdf2')
+        hashed_password = generate_password_hash(password, method="pbkdf2")
 
         # Check if user already exists
         res = user_manager.get_user_profile(username)
@@ -73,12 +71,10 @@ def register():
 def search():
     query = request.args.get("query", "")
     username = session["username"]
-    print("username in search: ", username)
     user_profile = user_manager.get_user_profile(username)
     user_profile_source = user_profile["hits"]["hits"][0]["_source"]
 
     if query:
-
         # TODO: previously this returned a list of dictionaries where each books data was found thru '_source' key.
         #       the new implementation returns the book data directly, removing the '_source' go between.
         #       I'm not fully clear on how make_response handles this, cannot check until users have desired format. -Theo
@@ -107,10 +103,9 @@ def addbooks():
 
 @app.route("/handle_add_book", methods=["POST"])
 def handle_add_book():
-    book_title = request.json['title']
+    book_title = request.json["title"]
     username = session["username"]
     user_manager.add_book(username, book_title)
-    print("inside handle add book", book_title, username )
     res = make_response(jsonify({"message": "Book added successfully!"}), 200)
     return res
 
