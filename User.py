@@ -1,6 +1,5 @@
 from es_connection import create_index
 from elasticsearch.helpers import bulk
-import math
 
 
 class UserProfile:
@@ -35,7 +34,7 @@ class UserProfile:
 
     def add_book(self, username, book_id):
         """Add a book to the user's read list and optionally update tags."""
-        #self.delete_user_profile(username)
+        # self.delete_user_profile(username)
         self.es.update(
             index=self.index_name,
             id=username,
@@ -50,30 +49,37 @@ class UserProfile:
                 }
             },
         )
-        book = self.es.search(index="books", query={"match": {"book_id": book_id}})['hits']['hits'][0]
-        self.add_genre(username, book)
-        self.add_abstract(username, book)
-        
-    def add_abstract(self, username, book):
-        abstract = book["_source"]['description']
-        abstract = abstract.strip().split()
-        self.bulk_actions = []
-        
-        for abs in abstract: 
-    
-            # TF
-            tf_dt = len([i for i in abstract if i==abs])
-            
-            # IDF
-            N = 1000
-            df_t = len(self.es.search(index="books", body={"query": {"match": {"description": abs}}, "size": 1000})['hits']['hits'])
-            idf_t = math.log(N/(df_t + 1))
-            
-            len_d = len(abstract)
-            
-            weight = (tf_dt * idf_t) / len_d
-            
-            update_action = {
+        self.add_genre(username, book_id)
+        self.add_abstract(username, book_id)
+
+    def get_field_tf_idf_score(self, field, book_id, max_terms=500):
+        # Make request to GET /my-index-000001/_termvectors/1?fields=message
+        term_vector_response = self.es.termvectors(
+            index="books",
+            id=book_id,
+            body={
+                "fields": [field],
+                "offsets": False,
+                "term_statistics": True,
+                "field_statistics": True,
+                "positions": False,
+                # TODO: Check params - Do we ever expect more than 500?
+                # Do we ever want to disregard low tf-idf terms?
+                "filter": {"max_num_terms": max_terms},
+            },
+        )
+        if not term_vector_response["found"]:
+            print("Book not found")
+            return None
+        term_vector_list = term_vector_response["term_vectors"][field]["terms"]
+        return term_vector_list
+
+    def generate_abstract_actions(self, username, book_id):
+        term_vector_list = self.get_field_tf_idf_score("description", book_id)
+        for term in term_vector_list:
+            weight = term_vector_list[term]["score"]
+
+            yield {
                 "_index": self.index_name,
                 "_id": username,
                 "_op_type": "update",
@@ -85,33 +91,21 @@ class UserProfile:
                         ctx._source.abs_weights[params.abs] = params.weight;
                     }
                     """,
-                    "params": {"abs": abs, "weight": weight}
-                }
+                    "params": {"abs": term, "weight": weight},
+                },
             }
-            self.bulk_actions.append(update_action)
-            
+
+    def add_abstract(self, username, book_id):
         # Bulk insert
-        bulk(self.es, self.bulk_actions)
-        
-    def add_genre(self, username, book):
-        genres = book["_source"]['genres']
-        self.bulk_actions = []
-        
-        for genre in genres: 
-            
-            # TF
-            tf_dt = len([i for i in genres if i==genre])
-            
-            # IDF
-            N = 1000
-            df_t = len(self.es.search(index="books", body={"query": {"match": {"genres": genre}}, "size": 1000})['hits']['hits'])
-            idf_t = math.log(N/(df_t + 1))
-            
-            len_d = len(genres)
-            
-            weight = (tf_dt * idf_t) / len_d
-            
-            update_action = {
+        bulk(self.es, self.generate_abstract_actions(username, book_id))
+
+    def generate_genre_actions(self, username, book_id):
+        term_vector_list = self.get_field_tf_idf_score("genres", book_id, 50)
+
+        for genre in term_vector_list:
+            weight = term_vector_list[genre]["score"]
+
+            yield {
                 "_index": self.index_name,
                 "_id": username,
                 "_op_type": "update",
@@ -123,13 +117,13 @@ class UserProfile:
                         ctx._source.gen_weights[params.gen] = params.weight;
                     }
                     """,
-                    "params": {"gen": genre, "weight": weight}
-                }
+                    "params": {"gen": genre, "weight": weight},
+                },
             }
-            self.bulk_actions.append(update_action)
-            
+
+    def add_genre(self, username, book_id):
         # Bulk insert
-        bulk(self.es, self.bulk_actions)
+        bulk(self.es, self.generate_genre_actions(username, book_id))
 
     def get_user_profile(self, username):
         """Retrieve a user profile by username."""
