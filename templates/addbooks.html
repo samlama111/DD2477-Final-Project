@@ -8,6 +8,9 @@
     <style>
         /* CSS to center align the content */
         body, html {
+            background-image: url('/static/images/wallpaper-books-on-bookshelf.png'); /* Path to your wallpaper image */
+            background-size: cover; /* Cover ensures the image covers the entire body */
+            background-position: center; /* Centers the image in the page */
             height: 100%;
             margin: 0;
             padding: 0;
@@ -19,6 +22,15 @@
 
         .container {
             text-align: center;
+        }
+
+        .container h1 {
+            background-color: white;
+            padding: 10px 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: inline-block;
         }
     </style>
     <script src="/static/js/app.js"></script> <!-- Link to your JS file -->
@@ -85,11 +97,17 @@
                         // div.appendChild(textContent);
 
                         // Create a container for the text content
-                        var textDiv = document.createElement('div');
-                        textDiv.className = 'book-info';
-                        var textContent = document.createTextNode(book['_source']["title"] + " - " + book['_source']['description']);
-                        textDiv.appendChild(textContent);
-                        div.appendChild(textDiv);
+
+                        var titleSpan = document.createElement('span');
+                        titleSpan.textContent = book['_source']["title"];
+                        titleSpan.title = book['_source']['description']; // Tooltip
+                        titleSpan.className = 'book-info';
+                        div.appendChild(titleSpan);
+
+                        var authorSpan = document.createElement('span');
+                        authorSpan.textContent = book['_source']['author'];
+                        authorSpan.className = 'book-author';
+                        div.appendChild(authorSpan);
     
                         // Create 'Add Book' button
                         var addButton = document.createElement('button');
