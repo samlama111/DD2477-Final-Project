@@ -8,6 +8,13 @@ body, html {
     background-color: #f0f0f0; /* Example background color */
 }
 
+.container {
+    text-align: center;
+    padding-top: 10px;
+    width: 90%;
+    margin: auto;
+}
+
 .login-container {
     display: flex;
     flex-direction: column;
@@ -33,6 +40,8 @@ body, html {
 .logo {
     width: 80%; /* Adjust the width as needed */
     margin-bottom: 20px;
+    height: auto;
+    margin: 0
 }
 
 input[type="text"], input[type="password"] {
@@ -92,6 +101,12 @@ button {
     text-align: left;
 }
 
+.book-author {
+    display: block; /* Ensures the author name appears below the title */
+    font-size: 0.8em; /* Smaller font size for the author */
+    margin-top: 2px; /* Space between title and author */
+}
+
 #searchResults {
     max-height: 500px; /* Adjust the height based on your UI design */
     overflow-y: auto; /* Enables vertical scrolling */
@@ -100,5 +115,6 @@ button {
     margin-top: 20px; /* Space above the results container */
     padding: 5px; /* Padding inside the results container */
     background-color: #fff; /* Sets background color to white for readability */
+    margin-bottom: 10px;
 }
 
