@@ -52,7 +52,7 @@ class UserProfile:
         )
         
     def calc_abs(self, username, book_name):
-        result = self.es.search(index="books", query={"match": {"name": book_name}})
+        result = self.es.search(index="books", query={"match": {"title": book_name}})
         for hit in result['hits']['hits']:
             abstract = hit["_source"]['description']
             abstract = abstract.split()
@@ -75,7 +75,7 @@ class UserProfile:
                 self.add_abs_with_weight(username, tok, weight)
                 
     def calc_gen(self, username, book_name):
-        result = self.es.search(index="books", query={"match": {"name": book_name}})
+        result = self.es.search(index="books", query={"match": {"title": book_name}})
         for hit in result['hits']['hits']:
             genres = hit["_source"]['genres']
             
