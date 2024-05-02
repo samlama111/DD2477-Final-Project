@@ -60,7 +60,9 @@ class UserProfile:
         self.bulk_actions = []
         
         for abs in abstract: 
-    
+            # abs = abs.strip(punctuation).lower()
+            # print(abs)
+
             # TF
             tf_dt = len([i for i in abstract if i==abs])
             
@@ -103,7 +105,7 @@ class UserProfile:
             tf_dt = len([i for i in genres if i==genre])
             
             # IDF
-            N = 1000
+            N = 15000
             df_t = len(self.es.search(index="books", body={"query": {"match": {"genres": genre}}, "size": 1000})['hits']['hits'])
             idf_t = math.log(N/(df_t + 1))
             
