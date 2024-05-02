@@ -37,6 +37,7 @@
 </head>
 <body>
     <div class="container">
+        <img src="/static/images/logo_resized.png" alt="Registration Logo" class="logo">
         <h1>Tell us Which Books You Like</h1>
         <form id="searchForm">
             <input type="text" id="searchQuery" placeholder="Search for books..." required>
@@ -48,14 +49,13 @@
 
     <script>
 
-        function add_book_to_user(bookTitle, buttonElement) {
-                console.log("Adding book: " + bookTitle);
+        function add_book_to_user(bookId, buttonElement) {
                 fetch('/handle_add_book', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ title: bookTitle })
+                    body: JSON.stringify({ book_id: bookId })
                 })
                 .then(response => response.json())
                 .then(data => {
