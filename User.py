@@ -1,4 +1,5 @@
 from es_connection import create_index
+from elasticsearch.helpers import bulk
 import math
 
 
@@ -33,9 +34,8 @@ class UserProfile:
         return response
 
     def add_book(self, username, book_id):
-        self.calc_gen(username, book_id)
-        self.calc_abs(username, book_id)
         """Add a book to the user's read list and optionally update tags."""
+        #self.delete_user_profile(username)
         self.es.update(
             index=self.index_name,
             id=username,
@@ -50,62 +50,35 @@ class UserProfile:
                 }
             },
         )
-
-    def calc_abs(self, username, book_id):
-        result = self.es.search(index="books", query={"match": {"book_id": book_id}})
-        for hit in result["hits"]["hits"]:
-            abstract = hit["_source"]["description"]
-            abstract = abstract.split()
-
-            for tok in abstract:
-                # Calculate score
-                tf_dt = len([i for i in abstract if i == tok])
-                N = 1000
-
-                temp = self.es.search(
-                    index="books",
-                    body={"query": {"match": {"description": tok}}, "size": 1000},
-                )
-
-                df_t = len(temp["hits"]["hits"])
-
-                idf_t = math.log(N / (df_t + 1))
-
-                len_d = len(abstract)
-                weight = (tf_dt * idf_t) / len_d
-
-                self.add_abs_with_weight(username, tok, weight)
-
-    def calc_gen(self, username, book_id):
-        result = self.es.search(index="books", query={"match": {"book_id": book_id}})
-        for hit in result["hits"]["hits"]:
-            genres = hit["_source"]["genres"]
-
-            for genre in genres:
-                # Calculate score
-                tf_dt = len([i for i in genres if i == genre])
-                N = 1000
-
-                temp = self.es.search(
-                    index="books",
-                    body={"query": {"match": {"genres": genre}}, "size": 1000},
-                )
-
-                df_t = len(temp["hits"]["hits"])
-
-                idf_t = math.log(N / (df_t + 1))
-
-                len_d = len(genres)
-                weight = (tf_dt * idf_t) / len_d
-
-                self.add_gen_with_weight(username, genre, weight)
-
-    def add_abs_with_weight(self, username, abs, weight):
-        """Add or update a tag and its weight for the user."""
-        self.es.update(
-            index=self.index_name,
-            id=username,
-            body={
+        book = self.es.search(index="books", query={"match": {"book_id": book_id}})['hits']['hits'][0]
+        self.add_genre(username, book)
+        self.add_abstract(username, book)
+        
+    def add_abstract(self, username, book):
+        abstract = book["_source"]['description']
+        abstract = abstract.strip().split()
+        self.bulk_actions = []
+        
+        for abs in abstract: 
+    
+            # TF
+            tf_dt = len([i for i in abstract if i==abs])
+            
+            # IDF
+            N = 1000
+            df_t = len(self.es.search(index="books", body={"query": {"match": {"description": abs}}, "size": 1000})['hits']['hits'])
+            idf_t = math.log(N/(df_t + 1))
+            
+            len_d = len(abstract)
+            
+            weight = (tf_dt * idf_t) / len_d
+            
+            print(abs)
+            
+            update_action = {
+                "_index": self.index_name,
+                "_id": username,
+                "_op_type": "update",
                 "script": {
                     "source": """
                     if (ctx._source.abs_weights.containsKey(params.abs)) {
@@ -114,17 +87,36 @@ class UserProfile:
                         ctx._source.abs_weights[params.abs] = params.weight;
                     }
                     """,
-                    "params": {"abs": abs, "weight": weight},
+                    "params": {"abs": abs, "weight": weight}
                 }
-            },
-        )
-
-    def add_gen_with_weight(self, username, gen, weight):
-        """Add or update a tag and its weight for the user."""
-        self.es.update(
-            index="user_profiles",
-            id=username,
-            body={
+            }
+            self.bulk_actions.append(update_action)
+            
+        # Bulk insert
+        bulk(self.es, self.bulk_actions)
+        
+    def add_genre(self, username, book):
+        genres = book["_source"]['genres']
+        self.bulk_actions = []
+        
+        for genre in genres: 
+            
+            # TF
+            tf_dt = len([i for i in genres if i==genre])
+            
+            # IDF
+            N = 1000
+            df_t = len(self.es.search(index="books", body={"query": {"match": {"genres": genre}}, "size": 1000})['hits']['hits'])
+            idf_t = math.log(N/(df_t + 1))
+            
+            len_d = len(genres)
+            
+            weight = (tf_dt * idf_t) / len_d
+            
+            update_action = {
+                "_index": self.index_name,
+                "_id": username,
+                "_op_type": "update",
                 "script": {
                     "source": """
                     if (ctx._source.gen_weights.containsKey(params.gen)) {
@@ -133,17 +125,13 @@ class UserProfile:
                         ctx._source.gen_weights[params.gen] = params.weight;
                     }
                     """,
-                    "params": {"gen": gen, "weight": weight},
+                    "params": {"gen": genre, "weight": weight}
                 }
-            },
-        )
-
-    def update_tags_from_book(self, username, book_name, book_tags):
-        """Update tags when a new book is added"""
-        for tag in book_tags:
-            self.add_tag_with_weight(
-                username, tag, weight=1
-            )  # Incremental weight update
+            }
+            self.bulk_actions.append(update_action)
+            
+        # Bulk insert
+        bulk(self.es, self.bulk_actions)
 
     def get_user_profile(self, username):
         """Retrieve a user profile by username."""
@@ -205,75 +193,3 @@ class UserProfile:
                 }
             },
         )
-
-    def get_normalized_tags(self, username):
-        """Retrieve tags and their normalized weights for a specific user"""
-        response = self.es.get(index=self.index_name, id=username)
-        if not response["found"]:
-            return {}  # Return an empty dictionary if the user is not found
-
-        tags = response["_source"].get("tags", {})
-
-        # Calculate the total weight of all tags
-        total_weight = sum(tags.values())
-
-        # Normalize the weights
-        if total_weight > 0:
-            normalized_tags = {
-                tag: round(weight / total_weight, 2) for tag, weight in tags.items()
-            }
-        else:
-            normalized_tags = {tag: 0 for tag in tags}
-
-        return normalized_tags
-
-
-# # Example usage
-# user_manager = UserProfile()
-
-# # Assuming 'john_doe' has tags with weights
-# normalized_tags = user_manager.get_normalized_tags("john_doe")
-# print("Normalized tags and weights for John Doe:", normalized_tags)
-
-
-# # Initialize the UserProfile manager
-# user_manager = UserProfile()
-
-# # Create a new user profile
-# # user_manager.create_user_profile('john_doe', 'secure_password123')
-
-# # # Add a book to the user's profile
-# user_manager.add_book("john_doe", "The Hunger Games")
-
-# # # Add/update a tag with weight
-# # user_manager.add_tag_with_weight('john_doe', 'dystopian', 5)
-
-# # Retrieve user profile data
-# user_profile = user_manager.get_user_profile("john_doe")
-# print(user_profile)
-
-# # Delete user profile
-# # user_manager.delete_user_profile("john_doe")
-
-# # user_manager.update_tags_from_book("john_doe", "The Hunger Games", ["thriller", "adventure fiction"])
-
-# Delete user profile
-# user_manager.delete_user_profile("john_doe")
-
-# usernames = user_manager.list_all_usernames()
-# print("Usernames:")
-# print(usernames)
-
-# books = user_manager.get_books_read_by_user("john_doe")
-# print("books: ", books)
-
-# abs_weights = user_manager.get_abs_weights("john_doe")
-# print("abs_weights: ", abs_weights)
-
-# gen_weights = user_manager.get_gen_weights("john_doe")
-# print("gen_weights: ", gen_weights)
-
-# user_manager.remove_book("john_doe", "The Hunger Games")
-
-# normalized_tags = user_manager.get_normalized_tags('john_doe')
-# print("Normalized tags and weights for John Doe:", normalized_tags)
