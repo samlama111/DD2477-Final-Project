@@ -139,8 +139,7 @@ class BookRankerApp(QMainWindow):
 			QMessageBox.critical(self, "Error", "Please enter a valid rating (0-3).")
 			return
 
-		# Store rating (you can implement this part according to your requirement)
-		print(f"Book {self.books[self.book_index]['title']} rating: {rating}")
+		# Store rating
 		self.ratings[self.books[self.book_index]['book_id']] = rating
 		self.rating_entry.setText("")
 
