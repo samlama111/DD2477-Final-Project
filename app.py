@@ -13,6 +13,7 @@ from Books import *
 from User import *
 from Books import ScrapedBook
 from es_connection import es, check_connection
+from postgres_connection import supabase
 
 
 app = Flask(__name__)
@@ -20,10 +21,9 @@ app.config["SECRET_KEY"] = "your_secret_key_here"
 
 # es.indices.delete(index="user_profiles")
 
-user_manager = UserProfile(es)
-# user_manager.delete_user_profile('theoi')
+user_manager = UserProfile(supabase, es)
 
-book_manager = Book(es)
+book_manager = Book(supabase, es)
 
 check_connection()
 
@@ -42,9 +42,9 @@ def login():
         password = request.form["password"]
 
         # Search user in Elasticsearch
-        res = user_manager.get_user_profile(username)
-        if res["hits"]["total"]["value"] > 0:
-            user = res["hits"]["hits"][0]["_source"]
+        response = user_manager.get_user_profile(username)
+        if response.data:  # Check if the list is not empty
+            user = response.data[0]  # Get the first user
             if check_password_hash(user["password"], password):
                 session["logged_in"] = True
                 session["username"] = username
@@ -61,8 +61,8 @@ def register():
         hashed_password = generate_password_hash(password, method='pbkdf2')
 
         # Check if user already exists
-        res = user_manager.get_user_profile(username)
-        if res["hits"]["total"]["value"] == 0:
+        response = user_manager.get_user_profile(username)
+        if response.data.__len__() == 0:
             # Add new user to Elasticsearch
             user_manager.create_user_profile(username, hashed_password)
             return redirect(url_for("login"))
@@ -76,10 +76,12 @@ def search():
     username = session["username"]
     print("username in search: ", username)
     user_profile = user_manager.get_user_profile(username)
-    user_profile_source = user_profile["hits"]["hits"][0]["_source"]
 
     if query:
-        books = book_manager.search_books(query, user_profile_source)
+        # TODO: previously this returned a list of dictionaries where each books data was found thru '_source' key.
+        #       the new implementation returns the book data directly, removing the '_source' go between.
+        #       I'm not fully clear on how make_response handles this, cannot check until users have desired format. -Theo
+        books = book_manager.search_books(query, user_profile.data[0])
         res = make_response(jsonify(books), 200)
         # for book in books:
         #     print(book['_source']["title"] + " - " + book['_source']['description'])
@@ -94,9 +96,6 @@ def addbooks():
     if query:
         books = book_manager.search_book_titles(query)
         res = make_response(jsonify(books), 200)
-        # for book in books:
-        #     print(book['_source']["title"] + " - " + book['_source']['description'])
-
         return res
     return render_template("addbooks.html")
 
