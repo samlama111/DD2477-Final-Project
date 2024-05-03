@@ -1,0 +1,10 @@
+testuser1 (password: 1234) has the following books added do their profile:
+A Game of Thrones : George R.R. Martin
+A Clash of Kings : George R.R. Martin
+A Storm of Swords : George R.R. Martin
+Assassin's Apprentice : Robin Hobb
+Royal Assassin : Robin Hobb
+Assassin's Quest : Robin Hobb
+The Hitchhiker’s Guide to the Galaxy : Douglas Adams
+Children of Time : Adrian Tchaikovsky
+

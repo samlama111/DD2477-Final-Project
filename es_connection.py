@@ -4,6 +4,15 @@ from elasticsearch import Elasticsearch
 CLOUD_ID = os.getenv("CLOUD_ID")
 API_KEY = os.getenv("API_KEY")
 
+if CLOUD_ID is None:
+    # When running outside of flask (relevance_checker script) the environment needs to be manually added
+    import sys
+    from dotenv import load_dotenv
+    sys.path.insert(1, os.getcwd())
+    load_dotenv()
+    CLOUD_ID = os.getenv("CLOUD_ID")
+    API_KEY = os.getenv("API_KEY")
+
 # Setup Elasticsearch connection
 es = Elasticsearch(cloud_id=CLOUD_ID, api_key=API_KEY)
 

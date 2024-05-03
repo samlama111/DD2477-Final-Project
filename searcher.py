@@ -26,7 +26,7 @@ class Searcher:
 	GENRE_BOOST = 5
 	ABSTRACT_BOOST = 1
 	SCORE_FUNCTION = "sigmoid(doc['n_reviews'].value, 2, 1) * doc['rating'].value"
-	MAX_HITS = 20
+	MAX_HITS = 30
 	RELEVANCE_THRESHOLD = 1e-4
 	WEIGHT_THRESHOLD = 1e-4 # If weight is less than this it is deemed as irrelevant.
 
