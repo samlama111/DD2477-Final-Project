@@ -23,10 +23,8 @@ from Books import Book
 from postgres_connection import supabase
 
 import json
-import numpy as np
-import matplotlib.pyplot as plt
-
 import nDCG_calculator
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QTextEdit, QLineEdit, QPushButton, QMessageBox
 
 load_dotenv()
 CLOUD_ID = os.getenv("CLOUD_ID")
@@ -38,9 +36,6 @@ es = Elasticsearch(cloud_id=CLOUD_ID, api_key=API_KEY)
 BETAS = [0.01, 0.1, 0.75]
 G_BOOSTS = [5, 10, 25, 50]
 MAX_HITS = 20
-
-import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QTextEdit, QLineEdit, QPushButton, QMessageBox
 
 def generate_book_list(query, username):
 	user_manager = UserProfile(supabase, es)
