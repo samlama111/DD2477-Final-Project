@@ -91,7 +91,7 @@ def search():
 def addbooks():
     query = request.args.get("query", "")
     if query:
-        books = book_manager.search_book_titles(query)
+        books = book_manager.search_book_titles(query) + book_manager.search_book_authors(query)
         res = make_response(jsonify(books), 200)
         return res
     return render_template("addbooks.html")

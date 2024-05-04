@@ -86,6 +86,11 @@ class Book:
         search_body = {"query": {"match": {"title": query}}}
         result = self.es.search(index=self.index_name, body=search_body)
         return result["hits"]["hits"]
+    
+    def search_book_authors(self, query):
+        search_body = {"query": {"match": {"author": query}}}
+        result = self.es.search(index=self.index_name, body=search_body)
+        return result["hits"]["hits"]
 
     def get_book_details(self, book_id):
         result = self.es.get(index=self.index_name, id=book_id)
