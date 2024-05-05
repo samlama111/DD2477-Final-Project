@@ -26,8 +26,9 @@ class Searcher:
 	GENRE_BOOST = 5
 	ABSTRACT_BOOST = 1
 	SCORE_FUNCTION = "sigmoid(doc['n_reviews'].value, 2, 1) * doc['rating'].value"
-	MAX_HITS = 100
+	MAX_HITS = 30
 	RELEVANCE_THRESHOLD = 1e-4
+	WEIGHT_THRESHOLD = 1e-4 # If weight is less than this it is deemed as irrelevant.
 
 	def __init__(self, client: Elasticsearch, book_index) -> None:
 		self.client = client
@@ -57,18 +58,18 @@ class Searcher:
 				"function_score" : {
 					"query": {
 						"bool" : {"should" : [
-							{"query_string": {
-								"query": q_genre,
-								"default_field": "genres",
-								"boost": self.GENRE_BOOST
-								}
-							},
-							{"query_string": {
-								"query": q_abstract,
-								"default_field": "description",
-								"boost": self.ABSTRACT_BOOST
-								}
-							},
+								{"query_string": {
+									"query": q_genre,
+									"default_field": "genres",
+									"boost": self.GENRE_BOOST
+									}
+								},
+								{"query_string": {
+									"query": q_abstract,
+									"default_field": "description",
+									"boost": self.ABSTRACT_BOOST
+									}
+								},
 							],
 							"must_not": [
 								{
@@ -77,6 +78,12 @@ class Searcher:
 									}
 								}
 							],
+							"filter": [
+								{"multi_match": {
+									"query": query,
+									"fields": ["title", "genres", "description", "author"],
+								}},
+							]
 						},
 					},
 					"script_score": {
@@ -85,6 +92,7 @@ class Searcher:
 						}}
 					}
 				}
+				, "size": self.MAX_HITS + len(user_profile["books"])
 			}
 		
 		# Query Elasticsearch
@@ -104,6 +112,6 @@ class Searcher:
 		return results, scores
 
 	def _construct_query_string(self, q0, br, abs_Br):
-		query_list = [f'({t})^{w * self.BETA / abs_Br}' for t, w in br.items()]
+		query_list = [f'({t})^{w * self.BETA / abs_Br}' for t, w in br.items() if w > self.WEIGHT_THRESHOLD]
 		query_list.append(f'({q0})^{self.ALPHA}')
 		return " ".join(query_list)

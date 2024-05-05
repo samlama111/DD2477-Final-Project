@@ -4,7 +4,11 @@ The intent of this script (through a rudimentary UI) lets a tester load the pref
 of a user and give a query to grade its relevance.
 
 The user will be shown book names, authors and abstracts and will be asked to rank their interest of the book
-on a scale of 0 to 3
+on a scale of 0 to 3, the ranking should be as follows
+3: Fits with their query and seems relatively similar to previously read books
+2: Fits the spirit of the query okay and has similarities to read books
+1: Fits the query okay or is fairly similar to read books
+0: Does not fit the query or previously read books at all
 """
 import sys
 import os
@@ -14,49 +18,72 @@ from elasticsearch import Elasticsearch
 from elasticsearch import NotFoundError
 from dotenv import load_dotenv
 
+from User import UserProfile
+from Books import Book
+from postgres_connection import supabase
+
+import json
+import nDCG_calculator
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QTextEdit, QLineEdit, QPushButton, QMessageBox
+
 load_dotenv()
 CLOUD_ID = os.getenv("CLOUD_ID")
 API_KEY = os.getenv("API_KEY")
 es = Elasticsearch(cloud_id=CLOUD_ID, api_key=API_KEY)
-BOOK_INDEX = "books"
-PROFILE_INDEX = "user_profiles"
+# BOOK_INDEX = "books"
+# PROFILE_INDEX = "user_profiles"
 
-BETAS = [0.01, 0.03, 0.1, 0.3, 0.75]
-G_BOOSTS = [1, 5, 10, 50]
+BETAS = [0.01, 0.1, 0.75]
+G_BOOSTS = [5, 10, 25, 50]
 MAX_HITS = 20
 
-import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QTextEdit, QLineEdit, QPushButton, QMessageBox
-
 def generate_book_list(query, username):
-	searcher = Searcher(es, BOOK_INDEX)
-	searcher.ABSTRACT_BOOST = 1
-	searcher.ALPHA = 1.0
-	user_profile = es.get(index=PROFILE_INDEX, id=username)["_source"]
+	user_manager = UserProfile(supabase, es)
+	book_manager = Book(supabase, es)
+	book_manager.searcher.MAX_HITS = MAX_HITS
+	user_profile = user_manager.get_user_profile(username)
 
 	books = []
+	added_book_ids = set()
+
+	# Check if ratings have already been given for this query and user, if so those ratings will be used (saving time)
+	path = f'./relevance_tests/data/{username}.json'
+	if os.path.isfile(path):
+		with open(path) as json_file:
+			data = json.load(json_file)
+			if query in data:
+				print("Loading ratings from memory")
+				ratings = data[query]['ratings']
+			else:
+				ratings = {}
+	else:
+		ratings = {}
 
 	# Dictionary storing the ranked results (in the form of book_ids) for a given beta and genre boost
-	# in the form of a tuple (beta, g_boost) : [ids]
+	# in the form of a nested dict {beta: {g_boost : [ids]}
 	ranked_results = {}
 	for beta in BETAS:
-		searcher.BETA = beta
+		book_manager.searcher.BETA = beta
+		ranked_results[beta] = {}
 		for g_boost in G_BOOSTS:
-			searcher.GENRE_BOOST = g_boost
-			results, _ = searcher.query(query, user_profile)
-
-			books.extend([res['_source'] for res in results])
-			ranked_results[(beta, g_boost)] = [res['_source']['book_id'] for res in results]
-	return books, ranked_results
-
+			book_manager.searcher.GENRE_BOOST = g_boost
+			results = book_manager.search_books(query, user_profile.data[0])
+			for res in results:
+				if res['_source']['book_id'] not in added_book_ids:
+					books.append(res['_source'])
+					added_book_ids.add(res['_source']['book_id'])
+			ranked_results[beta][g_boost] = [res['_source']['book_id'] for res in results]
+	return books, ranked_results, ratings
 
 class BookRankerApp(QMainWindow):
 	def __init__(self, query, username):
 		super().__init__()
 		self.setWindowTitle("Text Ranker")
 
-		self.ratings = {}
-		self.books, self.ranked_results = generate_book_list(query, username)
+		self.username = username
+		self.query = query
+
+		self.books, self.ranked_results, self.ratings = generate_book_list(query, username)
 		self.book_index = 0
 		self.current_book = None
 
@@ -85,15 +112,17 @@ class BookRankerApp(QMainWindow):
 
 	def display_text(self):
 		while True:
+			if self.book_index >= len(self.books):
+				QMessageBox.information(self, "Finished", "All books have been ranked.")
+				self.save_data()
+				self.close()
+				return
 			self.current_book = self.books[self.book_index]
 			if self.current_book['book_id'] in self.ratings:
 				self.book_index += 1
-				if self.book_index >= len(self.books):
-					QMessageBox.information(self, "Finished", "All books have been ranked.")
-					self.close()
 			else:
 				break
-		text = f'{self.current_book["title"]}\n{self.current_book["author"]}\n\n{self.current_book["description"]}'
+		text = f'{self.current_book["title"]} ({self.book_index+1}/{len(self.books)})\n{self.current_book["author"]}\n\n{self.current_book["description"]}\n\n{", ".join(self.current_book["genres"])}'
 		self.textbox.setPlainText(text)
 
 	def submit_rating(self):
@@ -105,8 +134,8 @@ class BookRankerApp(QMainWindow):
 			QMessageBox.critical(self, "Error", "Please enter a valid rating (0-3).")
 			return
 
-		# Store rating (you can implement this part according to your requirement)
-		print(f"Book {self.books[self.book_index]['title']} rating: {rating}")
+		# Store rating
+		self.ratings[self.books[self.book_index]['book_id']] = rating
 		self.rating_entry.setText("")
 
 		# Move to the next book or finish if all books are ranked
@@ -115,19 +144,44 @@ class BookRankerApp(QMainWindow):
 			self.display_text()
 		else:
 			QMessageBox.information(self, "Finished", "All books have been ranked.")
+			self.save_data()
 			self.close()
-		
+
+	def save_data(self):
+		path = f'./relevance_tests/data/{self.username}.json'
+
+		# Load data
+		if os.path.isfile(path):
+			with open(path) as json_file:
+				data = json.load(json_file)
+		else:
+			data = {}
+
+		# Add new data
+		data[self.query] = {
+			'ratings': self.ratings,
+			'results': self.ranked_results,
+		}
+
+		# Save updated data to file
+		with open(path, "w") as outfile: 
+			json.dump(data, outfile)
+				
 
 def main():
+	username = input('Username: ')
+	query = input('Query: ')
 	app = QApplication(sys.argv)
-	window = BookRankerApp('test', 'theoi')
+	window = BookRankerApp(query, username)
 	window.setGeometry(100, 100, 700, 700)
 	window.show()
-	sys.exit(app.exec_())
+	app.exec_() # sys.exit(app.exec_())
+	try:
+		nDCG_calculator.plot_ndcg(username, query, betas=["0.01"])
+	except FileNotFoundError:
+		print("File not found")
+	except IndexError:
+		print("Query not found")
 
 if __name__ == "__main__":
-	main()
-	
-
-if __name__ == '__main__':
 	main()

@@ -19,6 +19,8 @@ from postgres_connection import supabase
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "your_secret_key_here"
 
+# es.indices.delete(index="user_profiles")
+
 user_manager = UserProfile(supabase, es)
 
 book_manager = Book(supabase, es)
@@ -56,7 +58,7 @@ def register():
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
-        hashed_password = generate_password_hash(password, method="pbkdf2")
+        hashed_password = generate_password_hash(password, method='pbkdf2')
 
         # Check if user already exists
         response = user_manager.get_user_profile(username)
@@ -72,6 +74,7 @@ def register():
 def search():
     query = request.args.get("query", "")
     username = session["username"]
+    print("username in search: ", username)
     user_profile = user_manager.get_user_profile(username)
 
     if query:
@@ -99,9 +102,11 @@ def addbooks():
 
 @app.route("/handle_add_book", methods=["POST"])
 def handle_add_book():
-    book_id = request.json["book_id"]
+    book_title = request.json['book_id']
+    print("Book id: ", book_title)
     username = session["username"]
-    user_manager.add_book(username, book_id)
+    user_manager.add_book(username, book_title)
+    print("inside handle add book", book_title, username )
     res = make_response(jsonify({"message": "Book added successfully!"}), 200)
     return res
 
