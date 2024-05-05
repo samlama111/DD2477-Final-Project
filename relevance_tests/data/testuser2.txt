@@ -1,0 +1,9 @@
+testuser2 (password: 1234) has the following books added do their profile:
+Love Story : Erich Segal
+Love, Rosy : Cecelia Ahern
+It Ends With Us : Colleen Hoover
+Pride and Prejudice : Jane Austen
+Jane Eyre : Charlotte Brontë
+The Notebook : Nicholas Sparks
+Almost Heaven : Judith McNaught
+The Princess : Lori Wick

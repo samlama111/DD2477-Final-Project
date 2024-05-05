@@ -177,7 +177,7 @@ def main():
 	window.show()
 	app.exec_() # sys.exit(app.exec_())
 	try:
-		nDCG_calculator.plot_ndcg(username, query, betas=["0.01"])
+		nDCG_calculator.plot_ndcg(username, query, betas=["0.1", "0.75", "0.01"])
 	except FileNotFoundError:
 		print("File not found")
 	except IndexError:
