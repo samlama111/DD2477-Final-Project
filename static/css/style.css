@@ -15,6 +15,15 @@ body, html {
     margin: auto;
 }
 
+.profile_details{
+    text-align: center;
+    padding-top: 10px;
+    width: 90%;
+    margin: auto;
+    background-color: white; /* Set a background color for the login area */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Optional: adds shadow for better visibility */
+}
+
 .login-container {
     display: flex;
     flex-direction: column;
@@ -44,6 +53,12 @@ body, html {
     margin: 0
 }
 
+.profile {
+    width: 50px; /* Fixed width for the logo */
+    height: 50px; /* Fixed height for the logo */
+    margin-right: 10px; /* Space between the logo and the link */
+}
+
 input[type="text"], input[type="password"] {
     padding: 8px;
     margin-bottom: 10px; /* Adds space between the inputs */
@@ -61,6 +76,28 @@ button {
     border-radius: 4px;
     cursor: pointer;
     margin-top: 10px; /* Space between the password input and the button */
+}
+
+.profile-button-container {
+    position: fixed; /* Fix position relative to the viewport */
+    top: 10px; /* 10px from the top */
+    right: 10px; /* 10px from the right */
+    z-index: 1000; /* Ensures it's on top of other content */
+    display: flex;
+    flex-direction: column;
+}
+
+.profile-link {
+    margin-top: 1.5px;
+    color: #f9fefd; /* Use a bright color for visibility */
+    font-size: 0.9em; /* Increase the font size */
+    /*padding: 10px 20px; /* Add padding to make the link larger and easier to click */
+    background-color: #040404; /* A light background to stand out from the rest */
+    text-decoration: none; /* Remove underline to clean up the appearance */
+    /*border: 0.5px solid #007BFF; /* Add a border to highlight the link */
+    /*border-radius: 3px; /* Round the corners for a modern look */
+    display: inline-block; /* Ensures the padding and border are applied correctly */
+    transition: background-color 0.3s, color 0.3s; /* Smooth transition for hover effect */
 }
 
 .continue-search-link {
@@ -97,7 +134,7 @@ button {
 }
 
 
-.search-result-item {
+.search-result-item, .book-listing-item {
     display: flex;
     align-items: center; /* Ensures vertical alignment is centered */
     justify-content: space-between; /* Spaces out content between left and right sides */

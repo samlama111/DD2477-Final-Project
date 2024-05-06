@@ -2,6 +2,18 @@ USER_TABLE = "user_profiles"
 DESCRIPTION_TABLE = "description_tf_idf"
 GENRE_TABLE = "genre_tf_idf"
 
+import os
+import time
+import supabase
+import psycopg2
+
+
+DATABASE_NAME= os.getenv("DATABASE_NAME")
+USERNAME= os.getenv("DATABASE_NAME")
+PASSWORD = os.getenv("DATABASE_NAME")
+HOST = os.getenv("DATABASE_NAME") 
+PORT= os.getenv("DATABASE_NAME")
+
 
 class UserProfile:
     def __init__(self, postgres_connection_object, es_connection_object):
@@ -82,46 +94,53 @@ class UserProfile:
         return term_vector_list
 
     def add_tf_idf_entry(self, username, field, table_name, book_id):
+        conn = psycopg2.connect(
+        dbname=DATABASE_NAME,
+        user=USER_NAME,
+        password=PASSWORD,  # Ensure this is handled securely
+        host=HOST,
+        port=PORT
+        )
+        
+        cur = conn.cursor()
+
         term_vector_list = self.get_field_tf_idf_score(field, book_id)
-
         # Get the existing weight, with username and term being the PK
-        all_existing_weights = (
-            self.pg.table(table_name)
-            .select("*")
-            .eq("user_username", username)
-            .execute()
+        existing_weights = (
+        self.pg.table(table_name)
+        .select("*")
+        .eq("user_username", username)
+        .execute()
         ).data
-
+       
         # Convert the list of dictionaries to a dictionary
-        existing_weights_dict = {
-            item["term"]: item["weight"] for item in all_existing_weights
-        }
+        existing_weights_dict = {item["term"]: item["weight"] for item in existing_weights}
 
         updates = []
         inserts = []
 
         for term, term_data in term_vector_list.items():
             weight = term_data["score"]
-
-            # If the term already exists, update the weight
             if term in existing_weights_dict:
                 new_weight = existing_weights_dict[term] + weight
-                updates.append(
-                    {"user_username": username, "term": term, "weight": new_weight}
-                )
-            # Otherwise, insert a new row
+                updates.append({"term": term, "weight": new_weight})
             else:
                 inserts.append(
                     {"user_username": username, "term": term, "weight": weight}
                 )
 
-        for update in updates:
-            self.pg.table(table_name).update(update).eq("user_username", username).eq(
-                "term", update["term"]
-            ).execute()
+        if updates:
+            sql_query = self.construct_batch_update_query(table_name, username, updates)
+            cur.execute(sql_query)
+            conn.commit() 
+        
+        cur.close()
+        conn.close()
 
-        for insert in inserts:
-            self.pg.table(table_name).insert(insert).execute()
+        print("Update completed.")
+
+        if inserts:
+            self.pg.table(table_name).insert(inserts).execute()
 
     def add_abstract(self, username, book_id):
         self.add_tf_idf_entry(username, "description", DESCRIPTION_TABLE, book_id)
@@ -146,3 +165,22 @@ class UserProfile:
             .execute()
         ).data
         return {item["term"]: item["weight"] for item in existing_weights}
+    
+    def construct_batch_update_query(self, table_name, username, updates):
+        """
+        Constructs a single SQL query to update multiple rows in a batch.
+        Each update in 'updates' is a dictionary with keys 'term' and 'weight'.
+        """
+        sql = f"UPDATE {table_name} SET weight = CASE "
+        
+        # Add cases for each term's new weight
+        for update in updates:
+            term = update['term'].replace("'", "''")
+            new_weight = update['weight']
+            sql += f"WHEN term = '{term}' THEN {new_weight} "
+        
+        sql += "ELSE weight END "  # Retain old weight for other terms
+        sql += f"WHERE user_username = '{username}';"
+        
+        return sql
+
