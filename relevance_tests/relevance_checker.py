@@ -166,7 +166,7 @@ class BookRankerApp(QMainWindow):
 		# Save updated data to file
 		with open(path, "w") as outfile: 
 			json.dump(data, outfile)
-				
+
 
 def main():
 	username = input('Username: ')
@@ -177,7 +177,10 @@ def main():
 	window.show()
 	app.exec_() # sys.exit(app.exec_())
 	try:
-		nDCG_calculator.plot_ndcg(username, query, betas=["0.01"])
+		nDCG_calculator.plot_ndcg(username, query)
+		best_betas, best_boosts = nDCG_calculator.best_params(username, query, k=10, n=3)
+		nDCG_calculator.plot_ndcg(username, query, collective_beta_and_boosts=zip(best_betas, best_boosts), suffix='best', legend_shift=False, last_dashed=False)
+		nDCG_calculator.plot_ndcg(username, query, collective_beta_and_boosts=[("0.75", "50"), ("0.1", "50"), ("0.01", "50"), ("0.01", "5"), ("0.01", "10"), ("0.01", "25")], suffix='compare', legend_shift=False, last_dashed=True)
 	except FileNotFoundError:
 		print("File not found")
 	except IndexError:
