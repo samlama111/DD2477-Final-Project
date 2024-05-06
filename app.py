@@ -105,6 +105,33 @@ def handle_add_book():
     res = make_response(jsonify({"message": "Book added successfully!"}), 200)
     return res
 
+@app.route("/my-profile", methods=["GET"])
+def get_profile():
+    return render_template("profile.html")
+
+@app.route("/user_books", methods=["GET"])
+def get_user_books():
+    book_ids = user_manager.get_books_read_by_user(session['username'])
+    # print("books_ids: ", book_ids)
+    books = []
+    for i in range(len(book_ids)):
+        book_details = book_manager.get_book_details(book_ids[i])
+        # print(book_details)
+        books.append(book_details)
+    res = make_response(jsonify(books), 200)
+    # print("books: ", jsonify(books))
+    # print(res.json)
+
+    return res
+
+@app.route("/user_name", methods=["GET"])
+def get_user_name():
+    username = session['username']
+    # print("username: ", username)
+    if username:
+        return username, 200
+    else:
+        return "Error: Username not found", 404
 
 @app.route("/scraper/addbook", methods=["POST"])
 def add_book():

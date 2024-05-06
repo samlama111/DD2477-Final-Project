@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Search Books</title>
+    <title>User Profile</title>
     <link rel="stylesheet" href="/static/css/style.css"> <!-- Optional CSS link -->
     <style>
         /* CSS to center align the content */
         body, html {
-            background-image: url('/static/images/wallpaper-books-on-bookshelf.png'); /* Path to your wallpaper image */
+            background-image: url('/static/images/profile_background.jpg'); /* Path to your wallpaper image */
             background-size: cover; /* Cover ensures the image covers the entire body */
             background-position: center; /* Centers the image in the page */
             /* background-repeat: no-repeat; Prevents the image from repeating */
@@ -30,28 +30,24 @@
 <body>
     <div class="profile-button-container">
         <img src="/static/images/profile_image.png" alt="Profile Image" class="profile">
-        <a href="/my-profile" class="profile-link">My Profile</a>
-    </div>
-    <div class="container">
-        <img src="/static/images/logo_resized.png" alt="Registration Logo" class="logo">
-        <form id="searchForm">
-            <input type="text" id="searchQuery" placeholder="Search for books..." required>
-            <button type="submit">Search</button>
-        </form>
-        <a href="/addbooks" class="continue-search-link">Add Books</a>
-        <div id="searchResults"></div>
+        <a href="/search" class="profile-link">Go Back</a>
     </div>
 
+    <div class="profile_details">
+        <h2>User Profile</h2>
+        <div id="username"></div>
+        <div class="container">
+            <h3>Books You Like</h3>
+            <div id="searchResults"></div>
+        </div>
+    </div>
     <script>
         function getUsername() {
                 return localStorage.getItem('username'); // Retrieve the username from local storage
             }
 
-        document.getElementById('searchForm').onsubmit = function(event) {
-            event.preventDefault();
-            var query = document.getElementById('searchQuery').value;
-            var current_username = getUsername();
-            fetch('/search?query=' + encodeURIComponent(query) + '&username=' + encodeURIComponent(current_username))
+            window.onload = function() {
+            fetch('/user_books')
                 .then(response => response.json())
                 .then(data => {
                     var resultsContainer = document.getElementById('searchResults');
@@ -62,19 +58,19 @@
 
                         // Create and add book image
                         var img = document.createElement('img');
-                        img.src = book['_source']['img_url'];
+                        img.src = book['img_url'];//book['url']; // Assuming 'url' is the correct path to the image
                         img.className = 'book-image'; // Apply styles to the image
                         div.appendChild(img);
-    
-                        // Add book information
+                       
+                        //Add book info
                         var titleSpan = document.createElement('span');
-                        titleSpan.textContent = book['_source']["title"];
-                        titleSpan.title = book['_source']['description']; // Tooltip
+                        titleSpan.textContent = book["title"];
+                        titleSpan.title = book['description']; // Tooltip
                         titleSpan.className = 'book-info';
                         div.appendChild(titleSpan);
 
                         var authorSpan = document.createElement('span');
-                        authorSpan.textContent = book['_source']['author'];
+                        authorSpan.textContent = book['author'];
                         authorSpan.className = 'book-author';
                         div.appendChild(authorSpan);
     
@@ -84,6 +80,18 @@
                 })
                 .catch(error => console.error('Error fetching data: ', error));
         };
+        var resultsContainer = document.getElementById('username');
+        fetch('/user_name')
+            .then(response => response.text())
+            .then(username => {
+                // Display the fetched username
+                resultsContainer.innerHTML = 'Username:' + '   ' + username;
+            })
+            .catch(error => {
+                console.error('Error fetching username:', error);
+                // Display an error message if fetching fails
+                resultsContainer.innerHTML = 'Username:' + '   ' + 'Error fetching username';
+            });
     </script>
 </body>
 </html>

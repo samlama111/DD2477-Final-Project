@@ -2,3 +2,4 @@ elasticsearch
 python-dotenv
 Flask
 supabase
+psycopg2
