@@ -22,13 +22,20 @@ class Searcher:
 	Main class for handling recommendation queries for new books.
 	"""
 	ALPHA = 1.0
-	BETA = 0.75
-	GENRE_BOOST = 5
+	BETA = 0.01
+	GENRE_BOOST = 25
 	ABSTRACT_BOOST = 1
-	SCORE_FUNCTION = "sigmoid(doc['n_reviews'].value, 2, 1) * doc['rating'].value"
 	MAX_HITS = 30
 	RELEVANCE_THRESHOLD = 1e-4
 	WEIGHT_THRESHOLD = 1e-4 # If weight is less than this it is deemed as irrelevant.
+
+	SIGMOID_HALF = 100 # Number of ratings for which sigmoid should be 1/2
+	SIGMOID_THREE_QUARTS = 1000 # Number of ratings for which sigmoid should be 3/4
+
+	# Scaling and shifting params for sigmoid function
+	SIG_A = (SIGMOID_THREE_QUARTS - SIGMOID_HALF) / 2
+	SIG_B = 1 - SIGMOID_HALF / SIG_A
+	SCORE_FUNCTION = f"sigmoid(doc['n_reviews'].value / {SIG_A} + {SIG_B}, 1, 1) * doc['rating'].value"
 
 	def __init__(self, client: Elasticsearch, book_index) -> None:
 		self.client = client
