@@ -14,6 +14,7 @@ To run the app, run the following command:
 ```
 flask --app app run
 ```
+This requires a set up Elasticsearch and PostgreSQL server along with the relevant credentials in a .env file.
 
 
 ## Running tests
@@ -27,8 +28,6 @@ E.g. `python -m unittest connection_test.py`.
 
 
 ## Structure of data stored in Elasticsearch
-Two indexes are maintained INSERT INDEX NAMES HERE. 
-
 The index for books stores the books as dictionaries with the structure:
 ```
 {
