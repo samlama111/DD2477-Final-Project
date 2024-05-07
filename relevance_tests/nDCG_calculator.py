@@ -125,9 +125,9 @@ def plot_ndcg(username, query, betas=None, g_boosts=None, suffix='all', legend_s
 	if legend_shift:
 		ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 	else:
-		ax.legend()
-	plt.xlabel('k')
-	plt.ylabel('nDCG(k)')
+		ax.legend(fontsize=11)
+	plt.xlabel('k', fontsize=15)
+	plt.ylabel('nDCG(k)', fontsize=15)
 	plt.xticks(ks)
 	plt.savefig(f'./relevance_tests/plots/{username}-{"_".join(query.split(" "))}_{suffix}.png')
 	
