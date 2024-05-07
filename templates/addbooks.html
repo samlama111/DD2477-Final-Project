@@ -30,12 +30,15 @@
             margin: 20px 0;
             border-radius: 5px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            display: inline-block;
         }
     </style>
     <script src="/static/js/app.js"></script> <!-- Link to your JS file -->
 </head>
 <body>
+    <div class="profile-button-container">
+        <img src="/static/images/profile_image.png" alt="Profile Image" class="profile">
+        <a href="/my-profile" class="profile-link">My Profile</a>
+    </div>
     <div class="container">
         <img src="/static/images/logo_resized.png" alt="Registration Logo" class="logo">
         <h1>Tell us Which Books You Like</h1>
@@ -91,11 +94,6 @@
                         img.src = book['_source']['img_url'];
                         img.className = 'book-image'; // Apply styles to the image
                         div.appendChild(img);
-    
-                        // Add book information
-                        // var textContent = document.createTextNode(book['_source']["title"] + " - " + book['_source']['description']);
-                        // div.appendChild(textContent);
-
                         // Create a container for the text content
 
                         var titleSpan = document.createElement('span');
@@ -114,6 +112,7 @@
                         addButton.textContent = 'Add Book';
                         addButton.className = 'add-book-button'; // Apply styles to the button
                         addButton.onclick = function() {
+                            // addButton.style.backgroundColor = '#28a745';
                             add_book_to_user(book['_source']["book_id"], addButton);
                         };
     
