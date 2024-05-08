@@ -27,33 +27,6 @@ python -m unittest {test_file_name}
 E.g. `python -m unittest connection_test.py`.
 
 
-## Structure of data stored in Elasticsearch
-The index for books stores the books as dictionaries with the structure:
-```
-{
-  "title": str,
-  "author": str,
-  "abstract": str,
-  "genres": [str],
-  "rating": float,
-  "n_ratings": int,
-  "n_reviews": int,
-  "book_id": str,
-  "url": str,
-  "img_url": str,
-}
-```
-The index for the user profiles stores the profiles as dictionaries with the structure:
-
-```
-{
-  "name": str
-  "books": [str]
-  "gen_weights": dict(str, float)
-  "abs_weights": dict(str, float)
-}
-```
-
 ## Relevance tests
 
 Relevance tests can be run for any registered user. From main directory the script is started through the command
