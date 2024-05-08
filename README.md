@@ -3,18 +3,24 @@ Final project for DD2477
 
 ## Installation
 
-To install the app, install the required packages by running the following command:
-```
-pip install -r requirements.txt
-``` 
+Assuming you have a working Python environment:
+1. Install the required packages by running `pip install -r requirements.txt`.
+2. Put the relevant credentials in a .env file in the main directory, with the content as specified in .env.example.
+- Alternatively, put the entire .env in the main directory.
+3. The application should now be ready to run.
 
 ## Running the app
 
-To run the app, run the following command:
+To run the app, run the following command in the main directory:
 ```
 flask --app app run
 ```
-This requires a set up Elasticsearch and PostgreSQL server along with the relevant credentials in a .env file.
+
+- This requires the previous steps to have been completed.
+
+The app can be accessed at `http://localhost:5000/`.
+
+Please note that the Elasticsearch deployed on Elastic Cloud, with the current credentials, is not guaranteed to be up and running past May 13th, 2024. 
 
 
 ## Running tests
