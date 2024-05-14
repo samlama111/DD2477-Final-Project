@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Books</title>
+    <link rel="stylesheet" href="/static/css/style.css"> <!-- Optional CSS link -->
+    <style>
+        /* CSS to center align the content */
+        body, html {
+            background-image: url('/static/images/wallpaper-books-on-bookshelf.png'); /* Path to your wallpaper image */
+            background-size: cover; /* Cover ensures the image covers the entire body */
+            background-position: center; /* Centers the image in the page */
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f0f0f0; /* Example background color */
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        .container h1 {
+            background-color: white;
+            padding: 10px 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+    <script src="/static/js/app.js"></script> <!-- Link to your JS file -->
+</head>
+<body>
+    <div class="profile-button-container">
+        <img src="/static/images/profile_image.png" alt="Profile Image" class="profile">
+        <a href="/my-profile" class="profile-link">My Profile</a>
+    </div>
+    <div class="container">
+        <img src="/static/images/logo_resized.png" alt="Registration Logo" class="logo">
+        <h1>Tell us Which Books You Like</h1>
+        <form id="searchForm">
+            <input type="text" id="searchQuery" placeholder="Search for books..." required>
+            <button type="submit">Search</button>
+        </form>
+        <a href="/search" class="continue-search-link">Continue to Book Search</a>
+        <div id="searchResults"></div>
+    </div>
+
+    <script>
+
+        function add_book_to_user(bookId, buttonElement) {
+                fetch('/handle_add_book', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ book_id: bookId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    buttonElement.textContent = 'Added'; // Change the button text to 'Added'
+                    buttonElement.disabled = true; // Optionally disable the button to prevent further clicks
+                    buttonElement.style.backgroundColor = '#28a745'; // Change the button color to indicate success
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    buttonElement.textContent = 'Error'; // Indicate an error
+                    buttonElement.disabled = true; // Disable the button
+                    buttonElement.style.backgroundColor = '#dc3545'; // Change button color to indicate error
+                });
+            }
+
+
+    
+        document.getElementById('searchForm').onsubmit = function(event) {
+            event.preventDefault();
+            var query = document.getElementById('searchQuery').value;
+            fetch('/addbooks?query=' + encodeURIComponent(query))
+                .then(response => response.json())
+                .then(data => {
+                    var resultsContainer = document.getElementById('searchResults');
+                    resultsContainer.innerHTML = ''; // Clear previous results
+                    data.forEach(book => {
+                        var div = document.createElement('div');
+                        div.className = 'search-result-item'; // Add a class for styling if needed
+
+                        // Create and add book image
+                        var img = document.createElement('img');
+                        img.src = book['_source']['img_url'];
+                        img.className = 'book-image'; // Apply styles to the image
+                        div.appendChild(img);
+                        // Create a container for the text content
+
+                        var titleSpan = document.createElement('span');
+                        titleSpan.textContent = book['_source']["title"];
+                        titleSpan.title = book['_source']['description']; // Tooltip
+                        titleSpan.className = 'book-info';
+                        div.appendChild(titleSpan);
+
+                        var authorSpan = document.createElement('span');
+                        authorSpan.textContent = book['_source']['author'];
+                        authorSpan.className = 'book-author';
+                        div.appendChild(authorSpan);
+    
+                        // Create 'Add Book' button
+                        var addButton = document.createElement('button');
+                        addButton.textContent = 'Add Book';
+                        addButton.className = 'add-book-button'; // Apply styles to the button
+                        addButton.onclick = function() {
+                            // addButton.style.backgroundColor = '#28a745';
+                            add_book_to_user(book['_source']["book_id"], addButton);
+                        };
+    
+                        // Append the button to the result item div
+                        div.appendChild(addButton);
+    
+                        // Append the result item div to the results container
+                        resultsContainer.appendChild(div);
+                    });
+                })
+                .catch(error => console.error('Error fetching data: ', error));
+        };
+    </script>
+</body>
+</html>

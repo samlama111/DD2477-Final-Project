@@ -1,0 +1,177 @@
+body, html {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f0f0f0; /* Example background color */
+}
+
+.container {
+    text-align: center;
+    padding-top: 10px;
+    width: 90%;
+    margin: auto;
+}
+
+.profile_details{
+    text-align: center;
+    padding-top: 10px;
+    width: 90%;
+    margin: auto;
+    background-color: white; /* Set a background color for the login area */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Optional: adds shadow for better visibility */
+}
+
+.login-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    max-width: 340px;
+    padding: 20px;
+    background-color: white; /* Set a background color for the login area */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Optional: adds shadow for better visibility */
+}
+
+.register-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    background-color: white;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border-radius: 8px;
+}
+
+.logo {
+    width: 60wv; /* Adjust the width as needed */
+    margin-bottom: 20px;
+    height: auto;
+    margin: 0
+}
+
+.profile {
+    width: 50px; /* Fixed width for the logo */
+    height: 50px; /* Fixed height for the logo */
+    margin-right: 10px; /* Space between the logo and the link */
+}
+
+input[type="text"], input[type="password"] {
+    padding: 8px;
+    margin-bottom: 10px; /* Adds space between the inputs */
+    width: 300px; /* Make sure this fits well with the max-width of .login-container */
+    border: 1px solid #ccc; /* Optional: adds border to inputs */
+    border-radius: 4px; /* Optional: rounds the corners of the input fields */
+}
+
+button {
+    padding: 10px 20px;
+    width: 100%; /* Makes the button as wide as the inputs */
+    background-color: #007BFF; /* Example button color */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px; /* Space between the password input and the button */
+}
+
+.profile-button-container {
+    position: fixed; /* Fix position relative to the viewport */
+    top: 10px; /* 10px from the top */
+    right: 10px; /* 10px from the right */
+    z-index: 1000; /* Ensures it's on top of other content */
+    display: flex;
+    flex-direction: column;
+}
+
+.profile-link {
+    margin-top: 1.5px;
+    color: #f9fefd; /* Use a bright color for visibility */
+    font-size: 0.9em; /* Increase the font size */
+    /*padding: 10px 20px; /* Add padding to make the link larger and easier to click */
+    background-color: #040404; /* A light background to stand out from the rest */
+    text-decoration: none; /* Remove underline to clean up the appearance */
+    /*border: 0.5px solid #007BFF; /* Add a border to highlight the link */
+    /*border-radius: 3px; /* Round the corners for a modern look */
+    display: inline-block; /* Ensures the padding and border are applied correctly */
+    transition: background-color 0.3s, color 0.3s; /* Smooth transition for hover effect */
+}
+
+.continue-search-link {
+    margin-top: 1.5px;
+    color: #f9fefd; /* Use a bright color for visibility */
+    font-size: 0.9em; /* Increase the font size */
+    /*padding: 10px 20px; /* Add padding to make the link larger and easier to click */
+    background-color: #040404; /* A light background to stand out from the rest */
+    text-decoration: none; /* Remove underline to clean up the appearance */
+    /*border: 0.5px solid #007BFF; /* Add a border to highlight the link */
+    /*border-radius: 3px; /* Round the corners for a modern look */
+    display: inline-block; /* Ensures the padding and border are applied correctly */
+    transition: background-color 0.3s, color 0.3s; /* Smooth transition for hover effect */
+}
+
+.continue-search-link:hover {
+    background-color: #007BFF; /* Change background on hover */
+    color: white; /* Change text color on hover */
+    cursor: pointer; /* Change cursor to indicate clickability */
+}
+
+
+/* Additional styles for search result items */
+
+.add-book-button {
+    padding: 10px 15px; /* Standard padding */
+    font-size: 0.8em; /* Consistent font size */
+    margin-left: 10px; /* Space between the book name and the button */
+    width: auto; /* Adjusts to content size */
+    min-width: 100px; /* Minimum width to handle shorter titles */
+    white-space: nowrap; /* Prevents text from wrapping */
+    overflow: hidden; /* Keeps the text inside the button area */
+    text-overflow: ellipsis; /* Adds ellipsis if the text is too long */
+}
+
+
+.search-result-item, .book-listing-item {
+    display: flex;
+    align-items: center; /* Ensures vertical alignment is centered */
+    justify-content: space-between; /* Spaces out content between left and right sides */
+    margin-bottom: 5px; /* Space between each search result item */
+    margin-top: 5px;
+    padding: 5px;
+    background-color: #fff; /* White background for readability */
+    border: 1px solid #ddd; /* A light border */
+}
+
+.book-image {
+    width: 50px; /* Set a fixed width for the images */
+    height: auto; /* Maintain aspect ratio */
+    margin-right: 10px; /* Space between the image and the book title */
+    vertical-align: middle; /* Aligns the image with the text vertically */
+}
+
+.book-info {
+    flex-grow: 1; /* Allows the text content to take up the remaining space */
+    margin-right: 10px; /* Ensures some space before the button */
+    text-align: left;
+}
+
+.book-author {
+    display: block; /* Ensures the author name appears below the title */
+    font-size: 0.8em; /* Smaller font size for the author */
+    margin-top: 2px; /* Space between title and author */
+}
+
+#searchResults {
+    max-height: 500px; /* Adjust the height based on your UI design */
+    overflow-y: auto; /* Enables vertical scrolling */
+    width: 100%; /* Ensures the container fits the width of its parent */
+    border: 1px solid #ccc; /* Adds a light border for better visibility */
+    margin-top: 20px; /* Space above the results container */
+    padding: 5px; /* Padding inside the results container */
+    background-color: #fff; /* Sets background color to white for readability */
+    margin-bottom: 10px;
+}
+

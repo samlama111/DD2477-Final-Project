@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Books</title>
+    <link rel="stylesheet" href="/static/css/style.css"> <!-- Optional CSS link -->
+    <style>
+        /* CSS to center align the content */
+        body, html {
+            background-image: url('/static/images/wallpaper-books-on-bookshelf.png'); /* Path to your wallpaper image */
+            background-size: cover; /* Cover ensures the image covers the entire body */
+            background-position: center; /* Centers the image in the page */
+            /* background-repeat: no-repeat; Prevents the image from repeating */
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f0f0f0; /* Example background color */
+        }
+
+        .container {
+            text-align: center;
+        }
+    </style>
+    <script src="/static/js/app.js"></script> <!-- Link to your JS file -->
+</head>
+<body>
+    <div class="profile-button-container">
+        <img src="/static/images/profile_image.png" alt="Profile Image" class="profile">
+        <a href="/my-profile" class="profile-link">My Profile</a>
+    </div>
+    <div class="container">
+        <img src="/static/images/logo_resized.png" alt="Registration Logo" class="logo">
+        <form id="searchForm">
+            <input type="text" id="searchQuery" placeholder="Search for books..." required>
+            <button type="submit">Search</button>
+        </form>
+        <a href="/addbooks" class="continue-search-link">Add Books</a>
+        <div id="searchResults"></div>
+    </div>
+
+    <script>
+        function getUsername() {
+                return localStorage.getItem('username'); // Retrieve the username from local storage
+            }
+
+        document.getElementById('searchForm').onsubmit = function(event) {
+            event.preventDefault();
+            var query = document.getElementById('searchQuery').value;
+            var current_username = getUsername();
+            fetch('/search?query=' + encodeURIComponent(query) + '&username=' + encodeURIComponent(current_username))
+                .then(response => response.json())
+                .then(data => {
+                    var resultsContainer = document.getElementById('searchResults');
+                    resultsContainer.innerHTML = ''; // Clear previous results
+                    data.forEach(book => {
+                        var div = document.createElement('div');
+                        div.className = 'search-result-item'; // Add a class for styling if needed
+
+                        // Create and add book image
+                        var img = document.createElement('img');
+                        img.src = book['_source']['img_url'];
+                        img.className = 'book-image'; // Apply styles to the image
+                        div.appendChild(img);
+    
+                        // Add book information
+                        var titleSpan = document.createElement('span');
+                        titleSpan.textContent = book['_source']["title"];
+                        titleSpan.title = book['_source']['description']; // Tooltip
+                        titleSpan.className = 'book-info';
+                        div.appendChild(titleSpan);
+
+                        var authorSpan = document.createElement('span');
+                        authorSpan.textContent = book['_source']['author'];
+                        authorSpan.className = 'book-author';
+                        div.appendChild(authorSpan);
+    
+                        // Append the result item div to the results container
+                        resultsContainer.appendChild(div);
+                    });
+                })
+                .catch(error => console.error('Error fetching data: ', error));
+        };
+    </script>
+</body>
+</html>
